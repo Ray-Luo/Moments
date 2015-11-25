@@ -1,4 +1,4 @@
-package com.raystone.ray.goplaces_v1;
+package com.raystone.ray.goplaces_v1.Login;
 
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +13,10 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import com.raystone.ray.goplaces_v1.MyMapActivity;
+import com.raystone.ray.goplaces_v1.R;
+import com.raystone.ray.goplaces_v1.RegisterActivity;
 
 /**
  * Created by Ray on 11/14/2015.
