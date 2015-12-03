@@ -14,6 +14,8 @@ import android.widget.GridView;
 import com.raystone.ray.goplaces_v1.AlbumHelper;
 import com.raystone.ray.goplaces_v1.ImageBucket;
 import com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel2.ImageBucketLevel2Activity;
+import com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel2.TestActivity;
+import com.raystone.ray.goplaces_v1.R;
 
 import java.io.Serializable;
 import java.util.List;
@@ -36,9 +38,20 @@ public class ImageBucketLevel1Fragment extends Fragment {
     public static final String EXTRA_IMAGE_LIST = "imagelist";
 
     @Override
+    public void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        helper = AlbumHelper.getHelper();
+        helper.init(getContext());
+        initData();
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater,ViewGroup container, Bundle savedInstanceState)
     {
         View view = inflater.inflate(R.layout.image_bucket_level1,container,false);
+
+
         gridView = (GridView) view.findViewById(R.id.gridview);
         adapter = new ImageBucketLevel1Adapter(getActivity(), dataList);
         gridView.setAdapter(adapter);
@@ -46,8 +59,7 @@ public class ImageBucketLevel1Fragment extends Fragment {
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long
-                    id) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 /**
                  * 根据position参数，可以获得跟GridView的子View相绑定的实体类，然后根据它的isSelected状态，
                  * 来判断是否显示选中效果。 至于选中效果的规则，下面适配器的代码中会有说明
@@ -62,17 +74,13 @@ public class ImageBucketLevel1Fragment extends Fragment {
                  */
                 // adapter.notifyDataSetChanged();
                 Intent intent = new Intent(getActivity(), ImageBucketLevel2Activity.class);
-                intent.putExtra(ImageBucketLevel1Fragment.EXTRA_IMAGE_LIST, (Serializable) dataList.get(position).imageList);
+                intent.putExtra(ImageBucketLevel1Fragment.EXTRA_IMAGE_LIST, (Serializable)dataList.get(position).imageList);
                 startActivity(intent);
+                ImageBucketLevel1Fragment.this.onDestroy();
             }
 
         });
 
-
-        helper = AlbumHelper.getHelper();
-        helper.init(getContext());
-
-        initData();
         return view;
     }
 

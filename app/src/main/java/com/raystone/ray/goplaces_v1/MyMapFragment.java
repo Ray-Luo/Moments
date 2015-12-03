@@ -36,7 +36,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.raystone.ray.goplaces_v1.Login.LoginActivity;
+import com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel3.PlaceActivity;
 
 import java.io.IOException;
 import java.util.List;
@@ -141,8 +141,9 @@ public class MyMapFragment extends Fragment implements
         int id = item.getItemId();
 
         if (id == R.id.nav_camera) {
-            Intent i = new Intent(getActivity(),LoginActivity.class);
+            Intent i = new Intent(getActivity(),PlaceActivity.class);
             startActivity(i);
+            MyMapFragment.this.onDestroy();
 
         } else if (id == R.id.nav_gallery) {
 

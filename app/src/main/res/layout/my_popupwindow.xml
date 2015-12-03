@@ -44,7 +44,7 @@
             android:orientation="horizontal" >
 
             <Button
-                android:id="@+id/popupwindow_Photo"
+                android:id="@+id/popupwindow_photo"
                 android:layout_width="match_parent"
                 android:layout_height="55dp"
                 android:background="@drawable/bt_nobgd"

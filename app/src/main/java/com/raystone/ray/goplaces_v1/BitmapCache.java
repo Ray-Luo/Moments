@@ -108,22 +108,24 @@ public class BitmapCache extends Activity {
 		in.close();
 		int i = 0;
 		Bitmap bitmap;
-		while(true)
-		{
-			in = new BufferedInputStream(new FileInputStream(new File(path)));
-			if((options.outWidth >> i >= 1000) || (options.outHeight >> i >= 1000) )
+		while (true) {
+			if ((options.outWidth  >= 256)
+					|| (options.outHeight  >= 256)) {
+				in = new BufferedInputStream(new FileInputStream(new File(path)));
+				options.inSampleSize = (int) Math.pow(2.0D, i);
+				options.inJustDecodeBounds = true;
+				BitmapFactory.decodeStream(in, null, options);
+			}else
 			{
-				options.inSampleSize = (int)Math.pow(2.0D,i);
-			}
-			else
-			{
+				in = new BufferedInputStream(
+						new FileInputStream(new File(path)));
 				options.inJustDecodeBounds = false;
 				bitmap = BitmapFactory.decodeStream(in, null, options);
+				in.close();
 				break;
 			}
-			i = i + 1;
+			i += 1;
 		}
-		in.close();
 		return bitmap;
 	}
 

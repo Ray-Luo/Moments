@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.raystone.ray.goplaces_v1.BitmapCache;
 import com.raystone.ray.goplaces_v1.ImageBucket;
+import com.raystone.ray.goplaces_v1.R;
 
 import java.util.List;
 

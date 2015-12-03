@@ -62,6 +62,7 @@ public class LoginFragment extends Fragment {
                     {
                         Intent intent = new Intent(getActivity(),MyMapActivity.class);
                         startActivity(intent);
+                        LoginFragment.this.onDestroy();
                     }
                 }
             }

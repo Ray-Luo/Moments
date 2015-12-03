@@ -85,14 +85,6 @@ public class AlbumHelper {
 				_id = cur.getInt(_idColumn);
 				image_id = cur.getInt(image_idColumn);
 				image_path = cur.getString(dataColumn);
-
-				// Do something with the values.
-				// Log.i(TAG, _id + " image_id:" + image_id + " path:"
-				// + image_path + "---");
-				// HashMap<String, String> hash = new HashMap<String, String>();
-				// hash.put("image_id", image_id + "");
-				// hash.put("path", image_path);
-				// thumbnailList.add(hash);
 				thumbnailList.put("" + image_id, image_path);
 			} while (cur.moveToNext());
 		}
