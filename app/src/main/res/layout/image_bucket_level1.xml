@@ -8,24 +8,26 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:background="#ff495a" >
+        android:background="#303F9F" >
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="相册"
+            android:text="@string/gallery"
             android:textColor="#ffffff"
             android:textSize="20sp" />
 
         <TextView
+            android:id="@+id/quit_picking_1"
             android:layout_width="wrap_content"
             android:layout_height="40dp"
             android:gravity="center"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:layout_marginRight="8dp"
-            android:text="取消"
+            android:textColor="#ffffff"
+            android:text="@string/cancel"
             android:textSize="20sp" />
               
     </RelativeLayout>

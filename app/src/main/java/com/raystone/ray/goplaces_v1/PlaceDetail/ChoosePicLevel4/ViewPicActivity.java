@@ -1,5 +1,6 @@
 package com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel4;
 
+import android.content.Intent;
 import android.support.v4.app.Fragment;
 
 import com.raystone.ray.goplaces_v1.BaseActivity;
@@ -12,4 +13,6 @@ public class ViewPicActivity extends BaseActivity {
     @Override
     protected Fragment createFragment()
     {return ViewPicPagerFragment.newInstance();}
+
+
 }

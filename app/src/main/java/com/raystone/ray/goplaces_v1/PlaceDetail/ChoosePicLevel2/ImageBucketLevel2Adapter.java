@@ -35,7 +35,7 @@ public class ImageBucketLevel2Adapter extends BaseAdapter {
 	BitmapCache cache;
 	private Handler mHandler;
 	private int selectTotal = 0;
-        BitmapCache.ImageCallback callback = new BitmapCache.ImageCallback() {
+	BitmapCache.ImageCallback callback = new BitmapCache.ImageCallback() {
             @Override
             public void imageLoad(ImageView imageView, Bitmap bitmap, Object... params) {
                 if (imageView != null && bitmap != null) {

@@ -8,8 +8,7 @@
         android:id="@+id/item_grid_image"
         android:layout_width="68dp"
         android:layout_height="68dp"
-        android:scaleType="centerCrop"
-        android:src="@mipmap/ic_launcher">
+        android:scaleType="centerCrop">
     </ImageView>
 
 </LinearLayout>

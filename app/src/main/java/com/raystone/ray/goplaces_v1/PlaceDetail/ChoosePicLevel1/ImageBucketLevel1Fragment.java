@@ -10,11 +10,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.TextView;
 
 import com.raystone.ray.goplaces_v1.AlbumHelper;
 import com.raystone.ray.goplaces_v1.ImageBucket;
+import com.raystone.ray.goplaces_v1.MyMapActivity;
 import com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel2.ImageBucketLevel2Activity;
-import com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel2.TestActivity;
 import com.raystone.ray.goplaces_v1.R;
 
 import java.io.Serializable;
@@ -30,11 +31,12 @@ public class ImageBucketLevel1Fragment extends Fragment {
         return new ImageBucketLevel1Fragment();
     }
 
-    public static Bitmap bitmap;
-    List<ImageBucket> dataList;
+    public static Bitmap mBitmap;
+    List<ImageBucket> mDataList;
     GridView gridView;
     ImageBucketLevel1Adapter adapter;
     AlbumHelper helper;
+    public TextView quitPicking;
     public static final String EXTRA_IMAGE_LIST = "imagelist";
 
     @Override
@@ -51,32 +53,27 @@ public class ImageBucketLevel1Fragment extends Fragment {
     {
         View view = inflater.inflate(R.layout.image_bucket_level1,container,false);
 
-
+        quitPicking = (TextView)view.findViewById(R.id.quit_picking_1);
         gridView = (GridView) view.findViewById(R.id.gridview);
-        adapter = new ImageBucketLevel1Adapter(getActivity(), dataList);
+        adapter = new ImageBucketLevel1Adapter(getActivity(), mDataList);
         gridView.setAdapter(adapter);
 
+        quitPicking.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), MyMapActivity.class);
+                startActivity(intent);
+                getActivity().finish();
+            }
+        });
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                /**
-                 * 根据position参数，可以获得跟GridView的子View相绑定的实体类，然后根据它的isSelected状态，
-                 * 来判断是否显示选中效果。 至于选中效果的规则，下面适配器的代码中会有说明
-                 */
-                // if(dataList.get(position).isSelected()){
-                // dataList.get(position).setSelected(false);
-                // }else{
-                // dataList.get(position).setSelected(true);
-                // }
-                /**
-                 * 通知适配器，绑定的数据发生了改变，应当刷新视图
-                 */
-                // adapter.notifyDataSetChanged();
                 Intent intent = new Intent(getActivity(), ImageBucketLevel2Activity.class);
-                intent.putExtra(ImageBucketLevel1Fragment.EXTRA_IMAGE_LIST, (Serializable)dataList.get(position).imageList);
+                intent.putExtra(ImageBucketLevel1Fragment.EXTRA_IMAGE_LIST, (Serializable)
+                        mDataList.get(position).imageList);
                 startActivity(intent);
-                ImageBucketLevel1Fragment.this.onDestroy();
             }
 
         });
@@ -85,8 +82,8 @@ public class ImageBucketLevel1Fragment extends Fragment {
     }
 
     private void initData() {
-        dataList = helper.getImagesBucketList(false);
-        bitmap= BitmapFactory.decodeResource(getResources(), R.drawable.icon_addpic);
+        mDataList = helper.getImagesBucketList(false);
+        mBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.icon_addpic);
     }
 
 

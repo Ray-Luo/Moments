@@ -81,7 +81,7 @@ public class BitmapCache extends Activity {
 					
 				}
 				if (thumb == null) {
-					thumb = ImageBucketLevel1Fragment.bitmap;
+					thumb = ImageBucketLevel1Fragment.mBitmap;
 				}
 				Log.e(TAG, "-------thumb------"+thumb);
 				put(path, thumb);

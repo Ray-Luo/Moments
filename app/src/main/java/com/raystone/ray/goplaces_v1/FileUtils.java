@@ -12,15 +12,18 @@ import java.io.IOException;
 public class FileUtils {
 	
 	public static String SDPATH = Environment.getExternalStorageDirectory()
-			+ "/formats/";
+			+ "/GoPlaces/";
 
-	public static void saveBitmap(Bitmap bm, String picName) {
+	public static void saveBitmap(Bitmap bm, String subFolderName,String picName) {
 		Log.e("", "保存图片");
 		try {
 			if (!isFileExist("")) {
 				File tempf = createSDDir("");
 			}
-			File f = new File(SDPATH, picName + ".JPEG"); 
+			if (!isFileExist(subFolderName)) {
+				File tempf = createSDDir(subFolderName);
+			}
+			File f = new File(SDPATH + "/" + subFolderName + "/", picName + ".JPEG");
 			if (f.exists()) {
 				f.delete();
 			}
@@ -69,8 +72,8 @@ public class FileUtils {
 		for (File file : dir.listFiles()) {
 			if (file.isFile())
 				file.delete(); // 删除所有文件
-			else if (file.isDirectory())
-				deleteDir(); // 递规的方式删除文件夹
+			//else if (file.isDirectory())
+				//deleteDir(); // 递规的方式删除文件夹
 		}
 		dir.delete();// 删除目录本身
 	}

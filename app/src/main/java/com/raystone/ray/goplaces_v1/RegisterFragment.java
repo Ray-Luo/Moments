@@ -48,7 +48,7 @@ public class RegisterFragment extends Fragment {
                     editor.putString("email",mRegisterEmail.getText().toString());
                     editor.putString("password",mRegisterPassword.getText().toString());
                     editor.commit();
-
+                    Place.mUserName = mRegisterEmail.getText().toString();
                     Intent intent = new Intent(getActivity(),MyMapActivity.class);
                     startActivity(intent);
                 }

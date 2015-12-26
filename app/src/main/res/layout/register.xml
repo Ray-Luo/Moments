@@ -24,7 +24,7 @@
             android:layout_height="0dp"
             android:layout_weight="0.2"
             android:gravity="center"
-            android:text="GO PLACES"
+            android:text="MOMENTS"
             android:textSize="35sp"
             android:textColor="#7C8799"/>
 

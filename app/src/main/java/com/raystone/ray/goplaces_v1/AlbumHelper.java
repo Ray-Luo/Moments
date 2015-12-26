@@ -15,10 +15,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 /**
- * 专辑帮助类
- * 
- * @author Administrator
- * 
+ * Created by Ray on 11/24/2015.
  */
 public class AlbumHelper {
 	final String TAG = getClass().getSimpleName();

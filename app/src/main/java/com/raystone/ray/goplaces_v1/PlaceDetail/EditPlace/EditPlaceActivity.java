@@ -1,4 +1,4 @@
-package com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel3;
+package com.raystone.ray.goplaces_v1.PlaceDetail.EditPlace;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,17 +10,19 @@ import com.raystone.ray.goplaces_v1.Login.LoginActivity;
 import com.raystone.ray.goplaces_v1.MoveAmongFragments;
 import com.raystone.ray.goplaces_v1.MyMapActivity;
 import com.raystone.ray.goplaces_v1.Place;
+import com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel3.PlaceDetailFragment;
+import com.raystone.ray.goplaces_v1.PlaceList.PlaceListActivity;
 import com.raystone.ray.goplaces_v1.R;
 
 /**
  * Created by Ray on 11/21/2015.
  */
-public class PlaceActivity extends BaseActivity {
+public class EditPlaceActivity extends BaseActivity {
 
     @Override
     protected Fragment createFragment()
     {
-        return PlaceDetailFragment.newInstance();
+        return EditPlaceFragment.newInstance();
     }
 
     @Override
@@ -45,8 +47,13 @@ public class PlaceActivity extends BaseActivity {
     public void onBackPressed()
     {
         super.onBackPressed();
-        Intent intent = new Intent(this, MyMapActivity.class);
+        Intent intent;
+        if(MoveAmongFragments.markerToDetail)
+            intent = new Intent(this, MyMapActivity.class);
+        else
+            intent = new Intent(this, PlaceListActivity.class);
         startActivity(intent);
+        MoveAmongFragments.listDetailToPlaceDetail = false;
         finish();
     }
 

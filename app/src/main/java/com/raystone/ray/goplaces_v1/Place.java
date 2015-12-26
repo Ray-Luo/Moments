@@ -1,7 +1,12 @@
 package com.raystone.ray.goplaces_v1;
 
+import android.graphics.Bitmap;
+import android.net.Uri;
+
+import java.net.URI;
 import java.sql.Time;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -11,8 +16,17 @@ public class Place {
 
     private UUID mID;
     private String mTitle;
-    private Date mDate;
     private String mDescription;
+    private String mPicDirs;
+    public static String mUserName = "";
+    private String mPlaceTime;
+    private String mAddress;
+    public static final String SPLITOR = "~";
+    private double mPlaceLatitude;
+    private double mPlaceLongitude;
+    public static Uri mUserProfileUri;
+    public static Bitmap mUserProfilePic;
+
 
     public Place()
     {
@@ -22,7 +36,39 @@ public class Place {
     public Place(UUID uuid)
     {
         mID = uuid;
-        mDate = new Date();
+    }
+
+    public String getUserName() {
+        return mUserName;
+    }
+
+    public void setUserName(String mUserName) {
+        this.mUserName = mUserName;
+    }
+
+    public String getPlaceTime() {
+        return mPlaceTime;
+    }
+
+    public void setPlaceTime(String mPlaceTime) {
+        this.mPlaceTime = mPlaceTime;
+    }
+
+    public String getAddress() {
+        return mAddress;
+    }
+
+    public void setAddress(String mAddress) {
+        this.mAddress = mAddress;
+    }
+
+    public void setPicDirs(String dirs)
+    {
+        this.mPicDirs = dirs;
+    }
+
+    public String getPicDirs() {
+        return mPicDirs;
     }
 
     public UUID getID() {
@@ -37,19 +83,31 @@ public class Place {
         this.mTitle = mTitle;
     }
 
-    public Date getDate() {
-        return mDate;
-    }
 
-    public void setDate(Date mDate) {
-        this.mDate = mDate;
-    }
 
     public String getDescription() {
-        return mDescription;
+        return this.mDescription;
     }
 
     public void setDescription(String mDescription) {
         this.mDescription = mDescription;
+    }
+
+
+    public double getPlaceLatitude() {
+        return mPlaceLatitude;
+    }
+
+    public void setPlaceLatitude(double mPlaceLatitude) {
+        this.mPlaceLatitude = mPlaceLatitude;
+    }
+
+
+    public double getPlaceLongitude() {
+        return mPlaceLongitude;
+    }
+
+    public void setPlaceLongitude(double mPlaceLongitude) {
+        this.mPlaceLongitude = mPlaceLongitude;
     }
 }

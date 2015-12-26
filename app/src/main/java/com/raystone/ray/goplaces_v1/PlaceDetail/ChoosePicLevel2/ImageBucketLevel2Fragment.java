@@ -13,12 +13,16 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.raystone.ray.goplaces_v1.AlbumHelper;
 import com.raystone.ray.goplaces_v1.ImageItem;
+import com.raystone.ray.goplaces_v1.MoveAmongFragments;
 import com.raystone.ray.goplaces_v1.MyBitMap;
+import com.raystone.ray.goplaces_v1.MyMapActivity;
 import com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel3.PlaceActivity;
+import com.raystone.ray.goplaces_v1.PlaceDetail.EditPlace.EditPlaceActivity;
 import com.raystone.ray.goplaces_v1.R;
 
 import java.util.ArrayList;
@@ -37,19 +41,19 @@ public class ImageBucketLevel2Fragment extends Fragment {
 
     public static final String EXTRA_IMAGE_LIST = "imagelist";
 
-    // ArrayList<Entity> dataList;//鐢ㄦ潵瑁呰浇鏁版嵁婧愮殑鍒楄〃
-    List<ImageItem> dataList;
-    GridView gridView;
-    ImageBucketLevel2Adapter adapter;
-    AlbumHelper helper;
-    Button finishPickingButton;
+    public List<ImageItem> dataList;
+    public GridView gridView;
+    public ImageBucketLevel2Adapter adapter;
+    public AlbumHelper helper;
+    public TextView quitPicking2;
+    public Button finishPickingButton;
 
     Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case 0:
-                    Toast.makeText(getActivity(), "最多选择8张图片", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "You can only choose 8 pictures at most", Toast.LENGTH_SHORT).show();
                     break;
 
                 default:
@@ -60,7 +64,7 @@ public class ImageBucketLevel2Fragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.level2_grid, container, false);
+        View view = inflater.inflate(R.layout.image_bucket_level2, container, false);
         helper = AlbumHelper.getHelper();
         helper.init(getActivity().getApplicationContext());
 
@@ -72,7 +76,7 @@ public class ImageBucketLevel2Fragment extends Fragment {
         gridView.setAdapter(adapter);
         adapter.setTextCallback(new ImageBucketLevel2Adapter.TextCallback() {
             public void onListen(int count) {
-                finishPickingButton.setText("完成" + "(" + count + ")");
+                finishPickingButton.setText("Finish" + "(" + count + ")");
             }
         });
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -82,6 +86,16 @@ public class ImageBucketLevel2Fragment extends Fragment {
                 adapter.notifyDataSetChanged();
             }
 
+        });
+
+        quitPicking2 = (TextView)view.findViewById(R.id.quit_picking_2);
+        quitPicking2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), MyMapActivity.class);
+                startActivity(intent);
+                getActivity().finish();
+            }
         });
 
         finishPickingButton = (Button)view.findViewById(R.id.bt);
@@ -95,8 +109,14 @@ public class ImageBucketLevel2Fragment extends Fragment {
                 }
 
                 if (MyBitMap.act_bool) {
-                    Intent intent = new Intent(getActivity(), PlaceActivity.class);
-                    startActivity(intent);
+                    if(!MoveAmongFragments.listDetailToPlaceDetail) {
+                        Intent intent = new Intent(getActivity(), PlaceActivity.class);
+                        startActivity(intent);
+                    }else
+                    {
+                        Intent intent = new Intent(getActivity(), EditPlaceActivity.class);
+                        startActivity(intent);
+                    }
                 }
                 for (int i = 0; i < list.size(); i++) {
                     if (MyBitMap.dir.size() < 8) {
@@ -108,6 +128,14 @@ public class ImageBucketLevel2Fragment extends Fragment {
 
         });
         return view;
+    }
+
+    @Override
+    public void onDetach()
+    {
+        super.onDetach();
+        if(MoveAmongFragments.listDetailToPlaceDetail)
+            MoveAmongFragments.pickToDetail = true;
     }
 
 

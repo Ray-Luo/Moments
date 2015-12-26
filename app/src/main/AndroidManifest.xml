@@ -11,6 +11,7 @@
         android:protectionLevel="signature"/>
 
     <!-- To auto-complete the email text field in the login form with the user's emails -->
+
     <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
     <uses-permission android:name="android.permission.READ_PROFILE"/>
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
@@ -34,11 +35,13 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
     <application
+        android:name=".Login.AppHashKey"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
         <activity
             android:name=".Login.LoginActivity"
             android:label="@string/app_name"
@@ -48,7 +51,8 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".RegisterActivity"/>
+        <activity android:name=".RegisterActivity"
+                  android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity android:name=".MyMapActivity"
                   android:theme="@style/AppTheme.NoActionBar">
         </activity>
@@ -58,19 +62,30 @@
             android:value="@string/google_maps_key"/>
 
         <receiver android:name=".MyMapFragment$LocationReceiver">
-            <intent-filter>
-                <action android:name="com.raystone.ray.goplaces_v1.LOCATION_SERVICE"/>
-            </intent-filter>
         </receiver>
 
         <service android:name=".MyCurrentLocationService"/>
 
-    <activity android:name=".PlaceDetail.ChoosePicLevel3.PlaceActivity"/>
-        <activity android:name=".PlaceDetail.ChoosePicLevel1.ImageBucketLevel1Activity"/>
-        <activity android:name=".PlaceDetail.ChoosePicLevel2.ImageBucketLevel2Activity"/>
-        <activity android:name=".PlaceDetail.ChoosePicLevel4.ViewPicActivity"/>
-        <activity android:name=".Test"/>
-        <activity android:name=".PlaceDetail.ChoosePicLevel2.TestActivity"/>
+        <provider android:authorities="com.facebook.app.FacebookContentProvider915641231846809"
+                  android:name="com.facebook.FacebookContentProvider"
+                  android:exported="true" />
+
+        <activity android:name=".PlaceDetail.ChoosePicLevel1.ImageBucketLevel1Activity"
+                  android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity android:name=".PlaceDetail.ChoosePicLevel2.ImageBucketLevel2Activity"
+                  android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity android:name=".PlaceDetail.ChoosePicLevel3.PlaceActivity"
+                  android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity android:name=".PlaceDetail.ChoosePicLevel4.ViewPicActivity"
+                  android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity android:name=".PlaceList.PlaceListActivity"></activity>
+        <activity android:name=".PlaceDetail.EditPlace.EditPlaceActivity"
+                  android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity android:name="com.facebook.FacebookActivity"
+                  android:configChanges=
+                      "keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+                  android:theme="@android:style/Theme.Translucent.NoTitleBar"
+                  android:label="@string/app_name" />
     </application>
 
 </manifest>

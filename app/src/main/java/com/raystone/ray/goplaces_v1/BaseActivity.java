@@ -9,6 +9,9 @@ import com.raystone.ray.goplaces_v1.R;
 
 /**
  * Created by Ray on 11/14/2015.
+ * The activities hosting fragments will inherit this class which facilitates adding fragment to their corresponding activity.
+ * The BaseActivity will be added into the activity collector, so every class inheriting the BaseActivity will also be added into the
+ * the activity collector.
  */
 public abstract class BaseActivity extends AppCompatActivity{
 
@@ -26,6 +29,7 @@ public abstract class BaseActivity extends AppCompatActivity{
             fragment = createFragment();
             fm.beginTransaction().add(R.id.fragment_container,fragment).commit();
         }
+        ActivityCollector.addActivity(this);
     }
 
 

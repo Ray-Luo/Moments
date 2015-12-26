@@ -30,8 +30,38 @@ public class MyBitMap {
         int i = 0;
         Bitmap bitmap;
         while (true) {
-            if ((options.outWidth  >= 540)
-                    || (options.outHeight  >= 960)) {
+            if ((options.outWidth  >= 512)
+                    || (options.outHeight  >= 512)) {
+                in = new BufferedInputStream(new FileInputStream(new File(path)));
+                options.inSampleSize = (int) Math.pow(2.0D, i);
+                options.inJustDecodeBounds = true;
+                BitmapFactory.decodeStream(in, null, options);
+            }else
+            {
+                in = new BufferedInputStream(
+                        new FileInputStream(new File(path)));
+                options.inJustDecodeBounds = false;
+                bitmap = BitmapFactory.decodeStream(in, null, options);
+                in.close();
+                break;
+            }
+            i += 1;
+        }
+        return bitmap;
+    }
+
+    public static Bitmap zipSmallImage(String path) throws IOException
+    {
+        BufferedInputStream in = new BufferedInputStream(new FileInputStream(new File(path)));
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeStream(in, null, options);
+        in.close();
+        int i = 0;
+        Bitmap bitmap;
+        while (true) {
+            if ((options.outWidth  >= 256)
+                    || (options.outHeight  >= 256)) {
                 in = new BufferedInputStream(new FileInputStream(new File(path)));
                 options.inSampleSize = (int) Math.pow(2.0D, i);
                 options.inJustDecodeBounds = true;
