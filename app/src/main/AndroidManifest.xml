@@ -33,7 +33,7 @@
     <application
         android:name=".Login.AppHashKey"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/icon"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
@@ -57,7 +57,7 @@
 
         <service android:name=".Helper.MyCurrentLocationService"/>
 
-        <provider android:authorities="com.facebook.app.FacebookContentProvider915641231846809"
+        <provider android:authorities="com.facebook.app.FacebookContentProvider695575380578791"
                   android:name="com.facebook.FacebookContentProvider"
                   android:exported="true" />
 

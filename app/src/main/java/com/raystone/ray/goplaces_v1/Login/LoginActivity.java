@@ -7,6 +7,7 @@ import com.raystone.ray.goplaces_v1.Helper.MoveAmongFragments;
 import com.raystone.ray.goplaces_v1.Helper.MyBitMap;
 import com.raystone.ray.goplaces_v1.Helper.Place;
 import com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel3.PlaceDetailFragment;
+import com.raystone.ray.goplaces_v1.PlaceList.PlaceListFragment;
 import com.raystone.ray.goplaces_v1.R;
 
 /**
@@ -147,6 +148,9 @@ public class LoginActivity extends AppCompatActivity {
             case "EDITPLACE":
             {
                 android.app.Fragment fragment = fm.findFragmentByTag("PLACELISTDETAIL");
+                if(fragment == null) {
+                    fragment = PlaceListFragment.newInstance();
+                }
                 trans.replace(R.id.login_fragment_container, fragment, "PLACELISTDETAIL");
                 trans.addToBackStack(null);
                 trans.commit();

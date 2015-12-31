@@ -115,9 +115,6 @@ public class MyMapFragment extends android.app.Fragment implements
         super.onCreateView(inflater, container, savedInstanceState);
         if (mView != null) {
             ViewGroup parent = (ViewGroup) mView.getParent();
-           // LinearLayout headerView = (LinearLayout)LayoutInflater.from(getActivity()).inflate(R
-                  //  .layout.nav_header_navigation, null);
-            //mUser = (TextView)headerView.findViewById(R.id.user);
             mUser.setText(Place.mUserName);
             mFacebookProfilePic.setImageBitmap(Place.mUserProfilePic);
             if (parent != null)
@@ -172,15 +169,8 @@ public class MyMapFragment extends android.app.Fragment implements
             mUser = (TextView)headerView.findViewById(R.id.user);
             mFacebookProfilePic = (ImageView)headerView.findViewById(R.id.facebook_pic);
             navigationView.addHeaderView(headerView);
-            //if(!Place.mUserName.equals("Not Signed In"))
-            //{
-                mUser.setText(Place.mUserName);
-                mFacebookProfilePic.setImageBitmap(Place.mUserProfilePic);
-           // }
-            //else {
-                // set the profile pic to "undefined"
-               // mUser.setText(Place.mUserName);
-           // }
+            mUser.setText(Place.mUserName);
+            mFacebookProfilePic.setImageBitmap(Place.mUserProfilePic);
 
             //  Buttons for jump to next/previous moments. They are "GONE" initially and will appear when click "View Moments on Map" in the DrawerLayout
             mPreviousMoment = (ImageView)mView.findViewById(R.id.previous_moment);
@@ -353,15 +343,6 @@ public class MyMapFragment extends android.app.Fragment implements
         mMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
         mMap.setMyLocationEnabled(false);
         mMap.getUiSettings().setZoomControlsEnabled(true);
-
-        if(mMap != null){
-            mMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
-                @Override
-                public boolean onMyLocationButtonClick() {
-
-                    return true;
-                }
-            });}
         if(MoveAmongFragments.markerToDetail){
             showMomentsOnMap();}
     }

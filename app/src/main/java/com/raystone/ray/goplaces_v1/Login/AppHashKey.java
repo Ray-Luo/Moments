@@ -4,13 +4,8 @@ import android.app.Application;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
-import android.support.v4.app.FragmentManager;
 import android.util.Base64;
 import android.util.Log;
-import android.widget.Toast;
-
-import com.squareup.leakcanary.LeakCanary;
-
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -24,7 +19,6 @@ public class AppHashKey extends Application {
     {
         super.onCreate();
         printHashKey();
-        LeakCanary.install(this);
     }
 
     public void printHashKey()
