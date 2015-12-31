@@ -17,7 +17,6 @@ import android.os.Environment;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.Fragment;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,20 +32,20 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.facebook.share.model.SharePhoto;
 import com.facebook.share.model.SharePhotoContent;
 import com.facebook.share.widget.ShareDialog;
-import com.raystone.ray.goplaces_v1.FileUtils;
-import com.raystone.ray.goplaces_v1.MoveAmongFragments;
-import com.raystone.ray.goplaces_v1.MyBitMap;
-import com.raystone.ray.goplaces_v1.MyCurrentLocationService;
-import com.raystone.ray.goplaces_v1.Place;
-import com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel1.ImageBucketLevel1Activity;
-import com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel4.ViewPicActivity;
-import com.raystone.ray.goplaces_v1.PlaceList.PlaceListActivity;
+import com.raystone.ray.goplaces_v1.Helper.FileUtils;
+import com.raystone.ray.goplaces_v1.Helper.MoveAmongFragments;
+import com.raystone.ray.goplaces_v1.Helper.MyBitMap;
+import com.raystone.ray.goplaces_v1.Helper.MyCurrentLocationService;
+import com.raystone.ray.goplaces_v1.Map.MyMapFragment;
+import com.raystone.ray.goplaces_v1.Helper.Place;
+import com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel1.ImageBucketLevel1Fragment;
+import com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel4.ViewPicPagerFragment;
 import com.raystone.ray.goplaces_v1.PlaceList.Places;
 import com.raystone.ray.goplaces_v1.R;
+import com.raystone.ray.goplaces_v1.Helper.RecycleThread;
 
 import java.io.File;
 import java.io.IOException;
@@ -59,8 +58,9 @@ import java.util.Objects;
 /**
  * Created by Ray on 11/23/2015.
  */
-public class PlaceDetailFragment extends Fragment{
+public class PlaceDetailFragment extends android.app.Fragment{
 
+    private View mView;
     private GridView mPicGridView;                                         //  GridView showing pictures
     private MyPicGridAdapter myPicGridAdapter;                             //  GridView's adapter
     private TextView mAddButton;                                           //   Button for adding a new place to the database
@@ -75,6 +75,9 @@ public class PlaceDetailFragment extends Fragment{
     private Double mLatitude;                                               //  temporarily store the latitude of the current location
     private Double mLongitude;                                              //  temporarily store the longitude of the current location
     private String mAddress = "testGeocoding";                             //  The address of the place(moment), and it will be changed to the name from reverse geocoding
+    private RecycleThread mRecycleLoadPicThread;                                   //  New defined thread. It's advantage is that it can recycle the thread by setting the field "exist" to true
+    private RecycleThread mRecycleGeocodingThread;
+
 
 
     public static PlaceDetailFragment newInstance()
@@ -83,13 +86,38 @@ public class PlaceDetailFragment extends Fragment{
     }
 
 
+    //  when the adding-new-place process finishes, set the temporary newPlace to null and unregister the location receiver
+    @Override
+    public void onDestroyView()
+    {
+        super.onDestroyView();
+        if(isLocationReceiverRegistered) {
+            getActivity().unregisterReceiver(mLocationReceiver);
+            mLocationReceiver = null;
+            locationService = null;
+            isLocationReceiverRegistered = false;
+        }
+        MoveAmongFragments.addPlaceMode = false;
+        if(mRecycleLoadPicThread != null)
+            mRecycleLoadPicThread.exit = false;
+        if(mRecycleGeocodingThread != null)
+            mRecycleGeocodingThread.exit = false;
+        mPicGridView = null;
+        mPlaceLocation = null;
+        mDescrip = null;
+        mView = null;
+    }
+
+
+
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-        View view = inflater.inflate(R.layout.level3_whole,container,false);
-
+        super.onCreateView(inflater, container, savedInstanceState);
+        mView = inflater.inflate(R.layout.level3_whole,container,false);
+        load();
         // set things up for the gridview and its adapter
-        mPicGridView = (GridView) view.findViewById(R.id.noScrollgridview);
+        mPicGridView = (GridView) mView.findViewById(R.id.noScrollgridview);
         mPicGridView.setSelector(new ColorDrawable(Color.TRANSPARENT));
         myPicGridAdapter = new MyPicGridAdapter(getActivity());
         mPicGridView.setAdapter(myPicGridAdapter);
@@ -101,22 +129,25 @@ public class PlaceDetailFragment extends Fragment{
                     new MyPopupWindow(getActivity(), mPicGridView);
                 } else {
                     //  when press the picture itself, it will launch the ViewPicActivity and its fragment to view the picture one pressed
-                    Intent intent = new Intent(getActivity(), ViewPicActivity.class);
-                    intent.putExtra("ID", arg2);
-                    startActivity(intent);
+                    //Intent intent = new Intent(getActivity(), ViewPicActivity.class);
+                    //intent.putExtra("ID", arg2);
+                    //startActivity(intent);
+                    viewPics(arg2);
+                    MoveAmongFragments.fromDetailToViewPics  =true;
                 }
             }
         });
 
         //  This is used to locate the current location
-        mPlaceLocation = (ImageView)view.findViewById(R.id.place_location);
+        mPlaceLocation = (ImageView)mView.findViewById(R.id.place_location);
         mPlaceLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 isLocationReceiverRegistered = true;
-                locationService = new Intent(getActivity(),MyCurrentLocationService.class);
+                locationService = new Intent(getActivity(), MyCurrentLocationService.class);
                 getActivity().startService(locationService);
-                IntentFilter filter = new IntentFilter("com.raystone.ray.goplaces_v1.LOCATION_SERVICE");
+                IntentFilter filter = new IntentFilter("com.raystone.ray.goplaces_v1" + "" +
+                        ".LOCATION_SERVICE");
                 mLocationReceiver = new LocationReceiver();
                 getActivity().registerReceiver(mLocationReceiver, filter);
             }
@@ -124,7 +155,7 @@ public class PlaceDetailFragment extends Fragment{
 
 
         //  The share-to-facebook button
-        shareToFacebook = (FloatingActionButton)view.findViewById(R.id.fab);
+        shareToFacebook = (FloatingActionButton)mView.findViewById(R.id.fab);
         shareToFacebook.setRippleColor(Color.BLUE);
         shareToFacebook.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -173,12 +204,11 @@ public class PlaceDetailFragment extends Fragment{
 
 
         //   where one types description about the place(moment). if there are some description, display them when coming back
-        mDescrip = (EditText)view.findViewById(R.id.descrip);
-        if(newPlace.getDescription() != null){
-            mDescrip.setText(newPlace.getDescription());}
-
+        mDescrip = (EditText)mView.findViewById(R.id.descrip);
+        if(newPlace.getDescription() != null){mDescrip.setText(newPlace.getDescription());}
+        else {mDescrip.setText("");}
         //  press this will add the place(moment) and its info to the database from which to retrieve info when viewing places in list mode
-        mAddButton = (TextView) view.findViewById(R.id.activity_selectimg_send);
+        mAddButton = (TextView) mView.findViewById(R.id.activity_selectimg_send);
         mAddButton.setText("Add");
         mAddButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -206,14 +236,58 @@ public class PlaceDetailFragment extends Fragment{
                         }
                         newPlace.setPicDirs(listToString(list));
                         Places.get(getActivity()).addPlace(newPlace);    //  insert a new entry in the database
-
-
-                Intent intent = new Intent(getActivity(), PlaceListActivity.class);       //  after add the new place in the database, view it in the list mode
-                startActivity(intent);
-                onDetach();      //  when the adding-new-place process finishes, set the temporary newPlace to null and unregister the location receiver
+                returnToMap();
+                newPlace = null;
             }
         });
-        return view;
+        return mView;
+    }
+
+
+    private void returnToMap()
+    {
+        android.app.FragmentManager fm = getActivity().getFragmentManager();
+        android.app.FragmentTransaction trans = fm.beginTransaction();
+        android.app.Fragment fragment = fm.findFragmentByTag("MAPFRAGMENT");
+        if(fragment == null) {
+            fragment = MyMapFragment.newInstance();
+        }
+        trans.replace(R.id.login_fragment_container, fragment,"MAPFRAGMENT");
+        trans.addToBackStack(null);
+        trans.commit();
+        MoveAmongFragments.currentFragment = "MAPFRAGMENT";
+    }
+
+    private void addPicByGallery()
+    {
+        android.app.FragmentManager fm = getActivity().getFragmentManager();
+        android.app.FragmentTransaction trans = fm.beginTransaction();
+        android.app.Fragment fragment = fm.findFragmentByTag("LEVEL1");
+        if(fragment == null) {
+            fragment = ImageBucketLevel1Fragment.newInstance();
+        }
+
+        trans.replace(R.id.login_fragment_container, fragment,"LEVEL1");
+        trans.addToBackStack(null);
+        trans.commit();
+        MoveAmongFragments.currentFragment = "LEVEL1";
+    }
+
+    private void viewPics(int position)
+    {
+        android.app.FragmentManager fm = getActivity().getFragmentManager();
+        android.app.FragmentTransaction trans = fm.beginTransaction();
+        android.app.Fragment fragment = fm.findFragmentByTag("VIEWPICS");
+        if(fragment == null) {
+            fragment = ViewPicPagerFragment.newInstance();
+        }
+        Bundle bundle = new Bundle();
+        bundle.putInt("ID", position);
+        fragment.setArguments(bundle);
+        trans.replace(R.id.login_fragment_container, fragment,"VIEWPICS");
+        trans.addToBackStack(null);
+        trans.commit();
+        MoveAmongFragments.currentFragment = "VIEWPICS";
     }
 
     //  The two following functions first resolve the url of the stored picture to get the pictures, and to display them when jumping back to this fragment
@@ -243,14 +317,7 @@ public class PlaceDetailFragment extends Fragment{
         return string;
     }
 
-    @Override
-    public void onAttach(Context context)
-    {
-        super.onAttach(getContext());
-        if(MoveAmongFragments.isAddPlaceFinishedOrCancelled)
-            newPlace = new Place();   //  initialize the newPlace
-        loadPic();    //  perform
-    }
+
 
     //  This saves the description and location info into the temporary newPlace if they exist
     public void saveTempPlace()
@@ -262,20 +329,10 @@ public class PlaceDetailFragment extends Fragment{
             newPlace.setPlaceLatitude(mLatitude);
             newPlace.setPlaceLongitude(mLongitude);
         }
-        MoveAmongFragments.isAddPlaceFinishedOrCancelled = false;
     }
 
 
-    //  when the adding-new-place process finishes, set the temporary newPlace to null and unregister the location receiver
-    @Override
-    public void onDetach()
-    {
-        super.onDetach();
-        if(isLocationReceiverRegistered) {
-            getActivity().unregisterReceiver(mLocationReceiver);}
-        MoveAmongFragments.isAddPlaceFinishedOrCancelled = true;
-        newPlace = null;
-    }
+
 
     @SuppressLint("HandleLeak")
     public class MyPicGridAdapter extends BaseAdapter
@@ -315,9 +372,9 @@ public class PlaceDetailFragment extends Fragment{
             {holder = (ViewHolder)convertView.getTag();}
 
             if(position == MyBitMap.bmp.size())
-            {   //  The last picture of the gridview is the "add more picture button", if exceeds 8, make it GONE,meaning cannot add more pictures
+            {   //  The last picture of the gridview is the "add more picture button", if exceeds 6, make it GONE,meaning cannot add more pictures
                 holder.image.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.icon_addpic));
-                if(position == 8)
+                if(position == 6)
                 {
                     holder.image.setVisibility(View.GONE);
                 }
@@ -336,19 +393,25 @@ public class PlaceDetailFragment extends Fragment{
 
     //  This function is used to display pictures when jumping back to the fragment. it will get the url of the image one by one, and store the images in a list.
     //  The image retrieval process happens in another thread, and it sends out a message to tell the adapter to change its content when an image is added in the list. Cannot directly change UI in the new thread.
-    public void loadPic()
+    public void load()
     {
-        if(MoveAmongFragments.MAPTOPLACE)
+        MoveAmongFragments.editPlace = null;
+        //if(MoveAmongFragments.addPlaceMode)
+               //  initialize the newPlace
+        if(MoveAmongFragments.addPlaceMode)
         {
+            newPlace = new Place();
             MyBitMap.bmp = new ArrayList<>();
             MyBitMap.dir = new ArrayList<>();
             MyBitMap.max = 0;
-            MoveAmongFragments.MAPTOPLACE = false;
+            MoveAmongFragments.addPlaceMode = false;
         }
-        new Thread(new Runnable() {
+
+        mRecycleLoadPicThread = new RecycleThread() {
             @Override
             public void run() {
-                while (true) {
+                super.run();
+                while (mRecycleLoadPicThread.exit) {
                     if (MyBitMap.max == MyBitMap.dir.size()) {
                         Message message = new Message();
                         message.what = 1;
@@ -358,7 +421,6 @@ public class PlaceDetailFragment extends Fragment{
                         String path;
                         try {
                             path = MyBitMap.dir.get(MyBitMap.max);
-                            ////不同之处
                             Bitmap bitmap = MyBitMap.zipImage(path);
                             MyBitMap.bmp.add(bitmap);
                             MyBitMap.max = MyBitMap.max + 1;
@@ -370,9 +432,10 @@ public class PlaceDetailFragment extends Fragment{
                         }
                     }
                 }
-            }
-        }).start();
 
+            }
+        };
+        mRecycleLoadPicThread.start();
     }
 
 
@@ -410,19 +473,19 @@ public class PlaceDetailFragment extends Fragment{
             photoButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(getActivity(), ImageBucketLevel1Activity.class);
-                    startActivity(intent);
                     dismiss();
                     saveTempPlace();
+                    addPicByGallery();
                 }
             });
 
             cameraButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    photo();
                     dismiss();
+                    photo();
                     saveTempPlace();
+
                 }
             });
 
@@ -452,7 +515,8 @@ public class PlaceDetailFragment extends Fragment{
 
     public class LocationReceiver extends BroadcastReceiver
     {
-        String addressResult = null;
+        private String addressResult = null;
+
         @Override
         public void onReceive(Context context,Intent intent)
         {
@@ -463,33 +527,64 @@ public class PlaceDetailFragment extends Fragment{
             getActivity().stopService(locationService);
 
             //reverse geocoding
-            final Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
-            new Thread(new Runnable() {
+            final Geocoder geocoder = new Geocoder(getActivity().getApplicationContext(), Locale.getDefault());
+            mRecycleGeocodingThread = new RecycleThread() {
                 @Override
                 public void run() {
-                    try {
-                        List<Address> list = geocoder.getFromLocation(mLatitude, mLongitude, 1);
-                        if(list != null && list.size() > 0)
-                        {
-                            Address address = list.get(0);
-                            addressResult = address.getAddressLine(0) + ", " + address.getLocality();
-                            mAddress = addressResult;
-                        }
-                    }catch (IOException e)
-                    {e.printStackTrace();}
+                    super.run();
+                    while(mRecycleGeocodingThread.exit)
+                    {
+                        try {
+                            List<Address> list = geocoder.getFromLocation(mLatitude, mLongitude, 1);
+                            if(list != null && list.size() > 0)
+                            {
+                                Address address = list.get(0);
+                                addressResult = address.getAddressLine(0) + ", " + address.getLocality();
+                                mAddress = addressResult;
+                            }
+                        }catch (IOException e)
+                        {e.printStackTrace();}
+                    }
                 }
-            }).start();
+            };
+            mRecycleGeocodingThread.start();
         }
-
     }
 
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case TAKE_PICTURE:
-                if (MyBitMap.dir.size() < 8 && resultCode == -1) {
+                if (MyBitMap.dir.size() < 6 && resultCode == -1) {
                     MyBitMap.dir.add(path);
                 }
+                mRecycleLoadPicThread = new RecycleThread() {
+                    @Override
+                    public void run() {
+                        super.run();
+                        while (mRecycleLoadPicThread.exit) {
+                            if (MyBitMap.max == MyBitMap.dir.size()) {
+                                Message message = new Message();
+                                message.what = 1;
+                                handler.sendMessage(message);
+                                break;
+                            } else {
+                                String path;
+                                try {
+                                    path = MyBitMap.dir.get(MyBitMap.max);
+                                    Bitmap bitmap = MyBitMap.zipImage(path);
+                                    MyBitMap.bmp.add(bitmap);
+                                    MyBitMap.max = MyBitMap.max + 1;
+                                    Message message = new Message();
+                                    message.what = 1;
+                                    handler.sendMessage(message);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    }
+                };mRecycleLoadPicThread.start();
                 break;
         }
     }

@@ -1,11 +1,5 @@
 package com.raystone.ray.goplaces_v1.PlaceList;
 
-import android.graphics.Bitmap;
-
-import com.raystone.ray.goplaces_v1.MyBitMap;
-
-import java.util.List;
-
 /**
  * Created by Ray on 12/3/2015.
  */

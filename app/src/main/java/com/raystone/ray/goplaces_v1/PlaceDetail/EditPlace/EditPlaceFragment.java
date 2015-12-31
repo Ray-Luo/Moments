@@ -17,9 +17,7 @@ import android.os.Environment;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.Fragment;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,18 +36,17 @@ import android.widget.Toast;
 import com.facebook.share.model.SharePhoto;
 import com.facebook.share.model.SharePhotoContent;
 import com.facebook.share.widget.ShareDialog;
-import com.raystone.ray.goplaces_v1.FileUtils;
-import com.raystone.ray.goplaces_v1.MoveAmongFragments;
-import com.raystone.ray.goplaces_v1.MyBitMap;
-import com.raystone.ray.goplaces_v1.MyCurrentLocationService;
-import com.raystone.ray.goplaces_v1.Place;
-import com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel1.ImageBucketLevel1Activity;
-import com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel4.ViewPicActivity;
+import com.raystone.ray.goplaces_v1.Helper.FileUtils;
+import com.raystone.ray.goplaces_v1.Helper.MoveAmongFragments;
+import com.raystone.ray.goplaces_v1.Helper.MyBitMap;
+import com.raystone.ray.goplaces_v1.Helper.MyCurrentLocationService;
+import com.raystone.ray.goplaces_v1.Helper.Place;
+import com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel1.ImageBucketLevel1Fragment;
 import com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel4.ViewPicPagerFragment;
-import com.raystone.ray.goplaces_v1.PlaceList.PlaceListActivity;
 import com.raystone.ray.goplaces_v1.PlaceList.PlaceListFragment;
 import com.raystone.ray.goplaces_v1.PlaceList.Places;
 import com.raystone.ray.goplaces_v1.R;
+import com.raystone.ray.goplaces_v1.Helper.RecycleThread;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,7 +59,7 @@ import java.util.Objects;
 /**
  * Created by Ray on 11/23/2015.
  */
-public class EditPlaceFragment extends Fragment{
+public class EditPlaceFragment extends android.app.Fragment{
 
     private GridView mPicGridView;
     private MyPicGridAdapter myPicGridAdapter;
@@ -73,11 +70,14 @@ public class EditPlaceFragment extends Fragment{
     private ShareDialog shareDialog;
     private FloatingActionButton shareToFacebook;
     private Intent locationService;
+    private View mView;
     private LocationReceiver mLocationReceiver;
     private boolean isLocationReceiverRegistered = false;
     private Double mLatitude;
     private Double mLongitude;
     private String mAddress = "testGeocoding";
+    private RecycleThread mRecycleLoadPicThread;
+    private RecycleThread mRecycleGeocodingThread;
 
 
     public static EditPlaceFragment newInstance()
@@ -91,8 +91,9 @@ public class EditPlaceFragment extends Fragment{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-        View view = inflater.inflate(R.layout.level3_whole,container,false);
-        mPicGridView = (GridView) view.findViewById(R.id.noScrollgridview);
+        loadPic();
+        mView = inflater.inflate(R.layout.level3_whole,container,false);
+        mPicGridView = (GridView) mView.findViewById(R.id.noScrollgridview);
         mPicGridView.setSelector(new ColorDrawable(Color.TRANSPARENT));
         myPicGridAdapter = new MyPicGridAdapter(getActivity());
 
@@ -103,15 +104,14 @@ public class EditPlaceFragment extends Fragment{
                 if (arg2 == MyBitMap.bmp.size()) {
                     new MyPopupWindow(getActivity(), mPicGridView);
                 } else {
-                    Intent intent = new Intent(getActivity(), ViewPicActivity.class);
-                    intent.putExtra("ID", arg2);
-                    startActivity(intent);
+                    viewPics(arg2);
+                    MoveAmongFragments.fromDetailToViewPics = true;
                 }
             }
         });
 
 
-        mPlaceLocation = (ImageView)view.findViewById(R.id.place_location);
+        mPlaceLocation = (ImageView)mView.findViewById(R.id.place_location);
         mPlaceLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -126,7 +126,7 @@ public class EditPlaceFragment extends Fragment{
         });
 
 
-        shareToFacebook = (FloatingActionButton)view.findViewById(R.id.fab);
+        shareToFacebook = (FloatingActionButton)mView.findViewById(R.id.fab);
         shareToFacebook.setRippleColor(Color.BLUE);
         shareToFacebook.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -174,12 +174,12 @@ public class EditPlaceFragment extends Fragment{
         });
 
 
-        mDescrip = (EditText)view.findViewById(R.id.descrip);
-        if(MoveAmongFragments.listDetailToPlaceDetail)
+        mDescrip = (EditText)mView.findViewById(R.id.descrip);
+        if(MoveAmongFragments.editPlaceMode) //MoveAmongFragments.listDetailToPlaceDetail
         {
-            mDescrip.setText(MoveAmongFragments.listToDetailPlace.getDescription().toString());
+            mDescrip.setText(MoveAmongFragments.editPlace.getDescription().toString());
         }
-        writeSomething = (TextView) view.findViewById(R.id.activity_selectimg_send);
+        writeSomething = (TextView) mView.findViewById(R.id.activity_selectimg_send);
         writeSomething.setText("Save");
         writeSomething.setOnClickListener(new View.OnClickListener() {
 
@@ -207,17 +207,12 @@ public class EditPlaceFragment extends Fragment{
                 }
                 MoveAmongFragments.editPlace.setPicDirs(listToString(list));
                 Places.get(getActivity()).updatePlace(MoveAmongFragments.editPlace);
-                MoveAmongFragments.listDetailToPlaceDetail = false;
-                MoveAmongFragments.pickToDetail = false;
-
-
-                Intent intent = new Intent(getActivity(), PlaceListActivity.class);
-                startActivity(intent);
-                onDetach();
+                returnToList();
+                MoveAmongFragments.editPlaceMode = false;
             }
         });
 
-        return view;
+        return mView;
     }
 
 
@@ -247,21 +242,27 @@ public class EditPlaceFragment extends Fragment{
         return string;
     }
 
-    @Override
-    public void onAttach(Context context)
-    {
-        super.onAttach(getContext());
-        loadPic();
-    }
+
 
     @Override
-    public void onDetach()
+    public void onDestroyView()
     {
-        super.onDetach();
+        super.onDestroyView();
         if(isLocationReceiverRegistered)
         {
             getActivity().unregisterReceiver(mLocationReceiver);
+            mLocationReceiver = null;
+            locationService = null;
+            isLocationReceiverRegistered = false;
         }
+        if(mRecycleLoadPicThread != null)
+            mRecycleLoadPicThread.exit = false;
+        if(mRecycleGeocodingThread != null)
+            mRecycleGeocodingThread.exit = false;
+        mPicGridView = null;
+        mPlaceLocation = null;
+        mDescrip = null;
+        mView = null;
     }
 
 
@@ -305,7 +306,7 @@ public class EditPlaceFragment extends Fragment{
             if(position == MyBitMap.bmp.size())
             {
                 holder.image.setImageBitmap(BitmapFactory.decodeResource(getResources(),R.drawable.icon_addpic));
-                if(position == 8)
+                if(position == 6)
                 {holder.image.setVisibility(View.GONE);}
             }
             else
@@ -323,7 +324,7 @@ public class EditPlaceFragment extends Fragment{
         {
             mPlace = MoveAmongFragments.editPlace;
             MyBitMap.dir = new ArrayList<>();
-            MyBitMap.bmp = PlaceListFragment.getPics(Places.get(getActivity()).getPlace(mPlace.getID()));
+            MyBitMap.bmp = PlaceListFragment.getPics(mPlace);
             if(!mPlace.getPicDirs().equals("")){
             String[] picDir = mPlace.getPicDirs().split(Place.SPLITOR);
             for(int i = 0; i < picDir.length; i++)
@@ -337,10 +338,11 @@ public class EditPlaceFragment extends Fragment{
             MoveAmongFragments.STATE = "OTHERSFROMPLACE";
         }else
         {
-            new Thread(new Runnable() {
+            mRecycleLoadPicThread = new RecycleThread() {
                 @Override
                 public void run() {
-                    while (true) {
+                    super.run();
+                    while (mRecycleLoadPicThread.exit) {
                         if (MyBitMap.max == MyBitMap.dir.size()) {
                             Message message = new Message();
                             message.what = 1;
@@ -349,20 +351,22 @@ public class EditPlaceFragment extends Fragment{
                         } else {
                             String path;
                             try {
-                                    path = MyBitMap.dir.get(MyBitMap.max);
-                                    Bitmap bitmap = MyBitMap.zipImage(path);
-                                    MyBitMap.bmp.add(bitmap);
-                                    MyBitMap.max = MyBitMap.max + 1;
-                                    Message message = new Message();
-                                    message.what = 1;
-                                    handler.sendMessage(message);
+                                path = MyBitMap.dir.get(MyBitMap.max);
+                                Bitmap bitmap = MyBitMap.zipImage(path);
+                                MyBitMap.bmp.add(bitmap);
+                                MyBitMap.max = MyBitMap.max + 1;
+                                Message message = new Message();
+                                message.what = 1;
+                                handler.sendMessage(message);
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
                         }
                     }
+
                 }
-            }).start();
+            };
+            mRecycleLoadPicThread.start();
         }
 
         }
@@ -402,19 +406,16 @@ public class EditPlaceFragment extends Fragment{
             photoButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(getActivity(), ImageBucketLevel1Activity.class);
-                    startActivity(intent);
                     dismiss();
-                    onDetach();
+                    addPicByGallery();
                 }
             });
 
             cameraButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    photo();
                     dismiss();
-                    onDetach();
+                    photo();
                 }
             });
 
@@ -427,13 +428,59 @@ public class EditPlaceFragment extends Fragment{
         }
     }
 
+    private void addPicByGallery()
+    {
+        android.app.FragmentManager fm = getActivity().getFragmentManager();
+        android.app.FragmentTransaction trans = fm.beginTransaction();
+        android.app.Fragment fragment = fm.findFragmentByTag("LEVEL1");
+        if(fragment == null) {
+            fragment = ImageBucketLevel1Fragment.newInstance();
+        }
+        trans.replace(R.id.login_fragment_container, fragment,"LEVEL1");
+        trans.addToBackStack(null);
+        trans.commit();
+        MoveAmongFragments.currentFragment = "LEVEL1";
+    }
+
+    private void viewPics(int position)
+    {
+        android.app.FragmentManager fm = getActivity().getFragmentManager();
+        android.app.FragmentTransaction trans = fm.beginTransaction();
+        android.app.Fragment fragment = fm.findFragmentByTag("VIEWPICS");
+        if(fragment == null) {
+            fragment = ViewPicPagerFragment.newInstance();
+        }
+        Bundle bundle = new Bundle();
+        bundle.putInt("ID", position);
+        fragment.setArguments(bundle);
+        trans.replace(R.id.login_fragment_container, fragment,"VIEWPICS");
+        trans.addToBackStack(null);
+        trans.commit();
+        MoveAmongFragments.currentFragment = "VIEWPICS";
+    }
+
+    private void returnToList()
+    {
+        android.app.FragmentManager fm = getActivity().getFragmentManager();
+        android.app.FragmentTransaction trans = fm.beginTransaction();
+        android.app.Fragment fragment = fm.findFragmentByTag("PLACELISTDETAIL");
+        if(fragment == null) {
+            fragment = PlaceListFragment.newInstance();
+        }
+        trans.replace(R.id.login_fragment_container, fragment,"PLACELISTDETAIL");
+        trans.addToBackStack(null);
+        trans.commit();
+        MoveAmongFragments.currentFragment = "PLACELISTDETAIL";
+    }
+
+
     private static final int TAKE_PICTURE = 0x000000;
     private String path = "";
 
     public void photo() {
         Intent openCameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         File file = new File(Environment.getExternalStorageDirectory()
-                + "/myimage/", String.valueOf(System.currentTimeMillis())
+                + "/GoPlaces/", String.valueOf(System.currentTimeMillis())
                 + ".jpg");
         path = file.getPath();
         Uri imageUri = Uri.fromFile(file);
@@ -453,22 +500,27 @@ public class EditPlaceFragment extends Fragment{
             Toast.makeText(getActivity(), "Location found  " + mLatitude, Toast.LENGTH_SHORT).show();
             abortBroadcast();
             getActivity().stopService(locationService);
-            final Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
-            new Thread(new Runnable() {
+            final Geocoder geocoder = new Geocoder(getActivity().getApplicationContext(), Locale.getDefault());
+            mRecycleGeocodingThread = new RecycleThread() {
                 @Override
                 public void run() {
-                    try {
-                        List<Address> list = geocoder.getFromLocation(39, -96, 1);
-                        if(list != null && list.size() > 0)
-                        {
-                            Address address = list.get(0);
-                            addressResult = address.getAddressLine(0) + ", " + address.getLocality();
-                            mAddress = addressResult;
-                        }
-                    }catch (IOException e)
-                    {e.printStackTrace();}
+                    super.run();
+                    while(mRecycleGeocodingThread.exit)
+                    {
+                        try {
+                            List<Address> list = geocoder.getFromLocation(mLatitude, mLongitude, 1);
+                            if(list != null && list.size() > 0)
+                            {
+                                Address address = list.get(0);
+                                addressResult = address.getAddressLine(0) + ", " + address.getLocality();
+                                mAddress = addressResult;
+                            }
+                        }catch (IOException e)
+                        {e.printStackTrace();}
+                    }
                 }
-            }).start();
+            };
+            mRecycleGeocodingThread.start();
         }
 
     }
@@ -476,9 +528,36 @@ public class EditPlaceFragment extends Fragment{
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case TAKE_PICTURE:
-                if (MyBitMap.dir.size() < 8 && resultCode == -1) {
+                if (MyBitMap.dir.size() < 6 && resultCode == -1) {
                     MyBitMap.dir.add(path);
                 }
+                mRecycleLoadPicThread = new RecycleThread() {
+                    @Override
+                    public void run() {
+                        super.run();
+                        while (mRecycleLoadPicThread.exit) {
+                            if (MyBitMap.max == MyBitMap.dir.size()) {
+                                Message message = new Message();
+                                message.what = 1;
+                                handler.sendMessage(message);
+                                break;
+                            } else {
+                                String path;
+                                try {
+                                    path = MyBitMap.dir.get(MyBitMap.max);
+                                    Bitmap bitmap = MyBitMap.zipImage(path);
+                                    MyBitMap.bmp.add(bitmap);
+                                    MyBitMap.max = MyBitMap.max + 1;
+                                    Message message = new Message();
+                                    message.what = 1;
+                                    handler.sendMessage(message);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    }
+                };mRecycleLoadPicThread.start();
                 break;
         }
     }

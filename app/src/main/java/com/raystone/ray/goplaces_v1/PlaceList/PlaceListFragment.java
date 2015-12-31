@@ -2,15 +2,12 @@ package com.raystone.ray.goplaces_v1.PlaceList;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,15 +16,12 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import com.raystone.ray.goplaces_v1.MoveAmongFragments;
-import com.raystone.ray.goplaces_v1.MyBitMap;
-import com.raystone.ray.goplaces_v1.MyMapActivity;
-import com.raystone.ray.goplaces_v1.Place;
-import com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel4.ViewPicActivity;
-import com.raystone.ray.goplaces_v1.PlaceDetail.EditPlace.EditPlaceActivity;
+import com.raystone.ray.goplaces_v1.Helper.MoveAmongFragments;
+import com.raystone.ray.goplaces_v1.Helper.MyBitMap;
+import com.raystone.ray.goplaces_v1.Helper.Place;
+import com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel4.ViewPicPagerFragment;
+import com.raystone.ray.goplaces_v1.PlaceDetail.EditPlace.EditPlaceFragment;
 import com.raystone.ray.goplaces_v1.R;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,12 +30,15 @@ import java.util.Objects;
 /**
  * Created by Ray on 12/2/2015.
  */
-public class PlaceListFragment extends Fragment {
+public class PlaceListFragment extends android.app.Fragment {
 
+    private View mView;
     private RecyclerView mPlaceRecycleView;
     private PlaceAdapter mPlaceAdapter;
     private Place mPlaceGridView;
     private int numberOfPics;
+    private Places allPlaces;
+    private List<Place> places;
 
 
 
@@ -50,33 +47,44 @@ public class PlaceListFragment extends Fragment {
         return new PlaceListFragment();
     }
 
+
+
+    private void load()
+    {
+        MoveAmongFragments.editPlace = null;
+        MyBitMap.bmp = new ArrayList<>();
+        MyBitMap.dir = new ArrayList<>();
+        MyBitMap.max = 0;
+    }
+
+    @Override
+    public void onDestroyView()
+    {
+        super.onDestroyView();
+        allPlaces = null;
+        places = null;
+        mPlaceAdapter = null;
+        mView = null;
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-        View v = inflater.inflate(R.layout.place_item_list,container,false);
-        mPlaceRecycleView = (RecyclerView) v.findViewById(R.id.place_recycle_view);
+        super.onCreateView(inflater, container, savedInstanceState);
+        mView = inflater.inflate(R.layout.place_item_list,container,false);
+        load();
+        mPlaceRecycleView = (RecyclerView) mView.findViewById(R.id.place_recycle_view);
         mPlaceRecycleView.setLayoutManager(new LinearLayoutManager(getActivity()));
         updateUI();
-        v.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (keyCode == KeyEvent.KEYCODE_BACK) {
-                    Intent i = new Intent(getActivity(), MyMapActivity.class);
-                    startActivity(i);
-                    getActivity().finish();
-                    return true;
-                }
-                return false;
-            }
-        });
-        return v;
+        return mView;
     }
 
 
     public void updateUI()
     {
-        Places allPlaces = Places.get(getActivity());
-        List<Place> places = allPlaces.getPlaces();
+        //  Get all the Places and put them in the RecycleView's adapter
+        allPlaces = Places.get(getActivity());
+        places = allPlaces.getPlaces();
 
         if (mPlaceAdapter == null)
         {
@@ -89,7 +97,9 @@ public class PlaceListFragment extends Fragment {
         }
     }
 
-
+    /*
+    define a holder for storing every single item in the RecycleView. In a holder, there are a GridView for showing pictures, a TextView for showing description, several TextViews for showing the user name, the date when the place was added, the address of the place, and an ImageView for showing user's profile picture. Also, a Place object representing the current place and the GridView's adapter.
+     */
     private class PlaceHolder extends RecyclerView.ViewHolder implements View.OnClickListener
     {
         private GridView mPlaceItemPics;
@@ -99,10 +109,6 @@ public class PlaceListFragment extends Fragment {
         private TextView mPlaceLocation;
         private TextView mPlaceTime;
         private ImageView mProfilePic;
-
-
-
-
         private Place mPlace;
 
         public PlaceHolder (View itemView)
@@ -119,11 +125,10 @@ public class PlaceListFragment extends Fragment {
 
         }
 
+        //  Bind some attributes
         public void bindPlace(Place place)
         {
             mPlace = place;
-
-
             mPlaceLocation.setText(mPlace.getAddress());
             mPlaceTime.setText(mPlace.getPlaceTime());
             mDescription.setText(mPlace.getDescription());
@@ -137,7 +142,10 @@ public class PlaceListFragment extends Fragment {
             mPlaceItemPics.setSelector(new ColorDrawable(Color.TRANSPARENT));
             myPicGridAdapter = new PlaceDetailAdapter(getActivity());
 
-            final float scale = getContext().getResources().getDisplayMetrics().density;
+            /*
+             This is intend to dynamically adjust the height of the GridView for each item. When there are more than 4 pictures in the GridView, increase the height.
+              */
+            final float scale = getActivity().getApplicationContext().getResources().getDisplayMetrics().density;
             numberOfPics = getPics(mPlace).size();
             mPlaceItemPics.setAdapter(myPicGridAdapter);
             if(numberOfPics == 0)
@@ -149,16 +157,13 @@ public class PlaceListFragment extends Fragment {
                 {
                     mPlaceItemPics.getLayoutParams().height = (int) (142 * scale + 0.5f);
                 }
+                //  When clicking on the images, one can view larger picture, but it is not allowed to delete them.
                 mPlaceItemPics.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
                     public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-                        Intent intent = new Intent(getActivity(), ViewPicActivity.class);
-                        intent.putExtra("ID", arg2);
-                        intent.putExtra("fromDetail",true);
-                        intent.putExtra("UUIDFromListDetail",mPlace.getID().toString());
-                        MoveAmongFragments.viewPicPlace = mPlace;
-                        startActivity(intent);
-                        onDetach();
+                        MoveAmongFragments.fromDetailToViewPics = false;
+                        //  MoveAmongFragments.viewPicPlace will be used by ViewPicPagerFragment
+                        MoveAmongFragments.editPlace = mPlace;
+                        viewPics(arg2);
                     }
                 });
             }
@@ -167,17 +172,44 @@ public class PlaceListFragment extends Fragment {
         @Override
         public void onClick(View view)
         {
-            Intent intent = new Intent(getActivity(), EditPlaceActivity.class);
-            MoveAmongFragments.listDetailToPlaceDetail = true;
-            MoveAmongFragments.listToDetailPlace = mPlace;
             MoveAmongFragments.editPlace = mPlace;
-            intent.putExtra("UUIDFromListDetail", mPlace.getID().toString());
             MoveAmongFragments.STATE = "LISTFROMPLACE";
-            startActivity(intent);
+            MoveAmongFragments.editPlaceMode = true;
+            listToEdit();
         }
 
     }
 
+    private void listToEdit()
+    {
+        android.app.FragmentManager fm = getActivity().getFragmentManager();
+        android.app.FragmentTransaction trans = fm.beginTransaction();
+        android.app.Fragment fragment = fm.findFragmentByTag("EDITPLACE");
+        if(fragment == null) {
+            fragment = EditPlaceFragment.newInstance();
+        }
+        trans.replace(R.id.login_fragment_container, fragment,"EDITPLACE");
+        trans.addToBackStack(null);
+        trans.commit();
+        MoveAmongFragments.currentFragment = "EDITPLACE";
+    }
+
+    private void viewPics(int position)
+    {
+        android.app.FragmentManager fm = getActivity().getFragmentManager();
+        android.app.FragmentTransaction trans = fm.beginTransaction();
+        android.app.Fragment fragment = fm.findFragmentByTag("VIEWPICS");
+        if(fragment == null) {
+            fragment = ViewPicPagerFragment.newInstance();
+        }
+        Bundle bundle = new Bundle();
+        bundle.putInt("ID", position);
+        fragment.setArguments(bundle);
+        trans.replace(R.id.login_fragment_container, fragment,"VIEWPICS");
+        trans.addToBackStack(null);
+        trans.commit();
+        MoveAmongFragments.currentFragment = "VIEWPICS";
+    }
 
     private class PlaceAdapter extends RecyclerView.Adapter<PlaceHolder>
     {

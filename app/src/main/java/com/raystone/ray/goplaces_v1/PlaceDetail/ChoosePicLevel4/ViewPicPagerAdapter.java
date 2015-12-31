@@ -3,6 +3,7 @@ package com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel4;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.View;
+import android.view.ViewGroup;
 
 import java.util.ArrayList;
 
@@ -11,45 +12,47 @@ import java.util.ArrayList;
  */
 public class ViewPicPagerAdapter extends PagerAdapter {
 
-    private ArrayList<View> listViews;// content
-
-    private int size;// 页数
-
-    public ViewPicPagerAdapter(ArrayList<View> listViews) {// 构造函数
+    private ArrayList<View> listViews;         // contents
+    private int size;                         //  size of pagers
+    public ViewPicPagerAdapter(ArrayList<View> listViews) {    //  constructor
         // 初始化viewpager的时候给的一个页面
         this.listViews = listViews;
         size = listViews == null ? 0 : listViews.size();
     }
 
-    public void setListViews(ArrayList<View> listViews) {// 自己写的一个方法用来添加数据
+    // when the contents of the adapter changes, reset its contents
+    public void setListViews(ArrayList<View> listViews) {
         this.listViews = listViews;
         size = listViews == null ? 0 : listViews.size();
     }
 
-    public int getCount() {// 返回数量
+    // return the size of pagers
+    public int getCount() {
         return size;
     }
 
+    //  force refresh view
     public int getItemPosition(Object object) {
         return POSITION_NONE;
     }
 
-    public void destroyItem(View arg0, int arg1, Object arg2) {// 销毁view对象
-        ((ViewPager) arg0).removeView(listViews.get(arg1 % size));
+    //  destroy one view
+    public void destroyItem(ViewGroup container, int position, Object object) {
+        ((ViewPager) container).removeView(listViews.get(position % size));
     }
 
-    public void finishUpdate(View arg0) {
-    }
 
-    public Object instantiateItem(View arg0, int arg1) {// 返回view对象
+    //  return the current view
+    public Object instantiateItem(ViewGroup container, int position) {
         try {
-            ((ViewPager) arg0).addView(listViews.get(arg1 % size), 0);
+            ((ViewPager) container).addView(listViews.get(position % size), 0);
 
         } catch (Exception e) {
         }
-        return listViews.get(arg1 % size);
+        return listViews.get(position % size);
     }
 
+    //  when sliding the ViewPager, use this to see the view returned by the "instantiateItem" belongs to which children of the ViewPager, that is, to locate its position
     public boolean isViewFromObject(View arg0, Object arg1) {
         return arg0 == arg1;
     }

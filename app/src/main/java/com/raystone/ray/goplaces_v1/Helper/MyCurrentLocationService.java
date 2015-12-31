@@ -1,4 +1,4 @@
-package com.raystone.ray.goplaces_v1;
+package com.raystone.ray.goplaces_v1.Helper;
 
 import android.app.Service;
 import android.content.Context;

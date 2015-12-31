@@ -1,10 +1,8 @@
-package com.raystone.ray.goplaces_v1;
+package com.raystone.ray.goplaces_v1.Login;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,10 +11,13 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.raystone.ray.goplaces_v1.Helper.Place;
+import com.raystone.ray.goplaces_v1.R;
+
 /**
  * Created by Ray on 11/14/2015.
  */
-public class RegisterFragment extends Fragment {
+public class RegisterFragment extends android.app.Fragment {
 
     private AutoCompleteTextView mRegisterEmail;
     private EditText mRegisterPassword;
@@ -49,8 +50,10 @@ public class RegisterFragment extends Fragment {
                     editor.putString("password",mRegisterPassword.getText().toString());
                     editor.commit();
                     Place.mUserName = mRegisterEmail.getText().toString();
+                    /*
                     Intent intent = new Intent(getActivity(),MyMapActivity.class);
                     startActivity(intent);
+                    */
                 }
             }
         });

@@ -5,7 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import com.raystone.ray.goplaces_v1.Place;
+import com.raystone.ray.goplaces_v1.Helper.Place;
 
 import java.util.ArrayList;
 import java.util.List;

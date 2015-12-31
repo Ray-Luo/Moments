@@ -9,8 +9,8 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.raystone.ray.goplaces_v1.BitmapCache;
-import com.raystone.ray.goplaces_v1.ImageBucket;
+import com.raystone.ray.goplaces_v1.Helper.BitmapCache;
+import com.raystone.ray.goplaces_v1.Helper.ImageBucket;
 import com.raystone.ray.goplaces_v1.R;
 
 import java.util.List;
@@ -23,8 +23,8 @@ public class ImageBucketLevel1Adapter extends BaseAdapter
     final String TAG = getClass().getSimpleName();
     Activity activity;
 
-    List<ImageBucket> dataList;
-    BitmapCache cache;
+    List<ImageBucket> dataList;     //  this is used in initializing the adapter
+    BitmapCache cache;              //  define a BitmapCache and rewrite the imageLoad method
     BitmapCache.ImageCallback callback = new BitmapCache.ImageCallback() {
         @Override
         public void imageLoad(ImageView imageView, Bitmap bitmap, Object... params) {
@@ -43,6 +43,7 @@ public class ImageBucketLevel1Adapter extends BaseAdapter
         }
     };
 
+    //  The adapter's constructor which takes in the activity to which the fragment attached, and a list of image folder info
     public ImageBucketLevel1Adapter(Activity activity, List<ImageBucket> list) {
         this.activity = activity;
         dataList = list;
@@ -71,6 +72,7 @@ public class ImageBucketLevel1Adapter extends BaseAdapter
         return arg0;
     }
 
+    //  define a holder to temporarily store info of a picture holder
     class Holder {
         private ImageView iv;
         private ImageView selected;
@@ -78,10 +80,13 @@ public class ImageBucketLevel1Adapter extends BaseAdapter
         private TextView count;
     }
 
+
+    //  See "BitmapCache.java" for more details
     @Override
     public View getView(int arg0, View arg1, ViewGroup arg2) {
         // TODO Auto-generated method stub
         Holder holder;
+        //  If the old view has nothing in it, create the content and store it in a holder for future reuse
         if (arg1 == null) {
             holder = new Holder();
             arg1 = View.inflate(activity, R.layout.single_image_item, null);

@@ -1,24 +1,21 @@
-package com.raystone.ray.goplaces_v1;
+package com.raystone.ray.goplaces_v1.Map;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Point;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
-import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.KeyEvent;
+import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -36,15 +33,19 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.raystone.ray.goplaces_v1.Login.LoginActivity;
-import com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel3.PlaceActivity;
-import com.raystone.ray.goplaces_v1.PlaceDetail.EditPlace.EditPlaceActivity;
-import com.raystone.ray.goplaces_v1.PlaceList.PlaceListActivity;
+import com.raystone.ray.goplaces_v1.Helper.MoveAmongFragments;
+import com.raystone.ray.goplaces_v1.Helper.MyBitMap;
+import com.raystone.ray.goplaces_v1.Helper.MyCurrentLocationService;
+import com.raystone.ray.goplaces_v1.Helper.Place;
+import com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel3.PlaceDetailFragment;
+import com.raystone.ray.goplaces_v1.PlaceDetail.EditPlace.EditPlaceFragment;
+import com.raystone.ray.goplaces_v1.PlaceList.PlaceListFragment;
 import com.raystone.ray.goplaces_v1.PlaceList.Places;
+import com.raystone.ray.goplaces_v1.R;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,7 +54,7 @@ import java.util.List;
 /**
  * Created by Ray on 11/15/2015.
  */
-public class MyMapFragment extends Fragment implements
+public class MyMapFragment extends android.app.Fragment implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         NavigationView.OnNavigationItemSelectedListener{
@@ -90,104 +91,129 @@ public class MyMapFragment extends Fragment implements
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
+        load();
     }
+
+    public void load()
+    {
+        setHasOptionsMenu(true);
+        MoveAmongFragments.editPlace = null;
+        MyBitMap.bmp = new ArrayList<>();
+        MyBitMap.dir = new ArrayList<>();
+        MyBitMap.max = 0;
+        buildGoogleApiClient();
+        mCurrentActivity = getActivity();
+        mGoogleApiClient.connect();
+        mTotalMoments = Places.get(getActivity()).getPlaces().size();  //  The total number of places(moments) ones has defined
+    }
+
+
 
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         super.onCreateView(inflater, container, savedInstanceState);
-        View v = inflater.inflate(R.layout.navigation_layout, container, false);
+        if (mView != null) {
+            ViewGroup parent = (ViewGroup) mView.getParent();
+            if (parent != null)
+                parent.removeView(mView);
+            load();
+        }
 
-        // The address search bar
-        searchEditText = (EditText)v.findViewById(R.id.address);
-        searchTextView = (TextView)v.findViewById(R.id.search);
-        searchTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(searchEditText.getText().toString() !=null && !searchEditText.getText().toString().equals("")){
-                    new LocationTask().execute(searchEditText.getText().toString());
-                }
-            }
-        });
-
-        // Locating the current location
-        myLocationImageView = (ImageView)v.findViewById(R.id.my_location);
-        myLocationImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Use the location service to locate
-                isLocationReceiverRegistered = true;
-                mLocationService = new Intent(mCurrentActivity,MyCurrentLocationService.class);
-                mCurrentActivity.startService(mLocationService);
-
-                //  Add a filter for the receiver
-                IntentFilter filter = new IntentFilter("com.raystone.ray.goplaces_v1.LOCATION_SERVICE");
-                mLocationReceiver = new MyMapFragment.LocationReceiver();
-                mCurrentActivity.registerReceiver(mLocationReceiver, filter);
-            }
-        });
-
-        // more work for the toolbar and the DrawerLayout
-        mToolbar = (Toolbar) v.findViewById(R.id.toolbar);
-        ((AppCompatActivity)getActivity()).setSupportActionBar(mToolbar);
-        DrawerLayout drawer = (DrawerLayout)v. findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(getActivity(), drawer, mToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
-        NavigationView navigationView = (NavigationView)v.findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-
-        // Add a headView in the DrawerLayout
-        LinearLayout headerView = (LinearLayout)LayoutInflater.from(getActivity()).inflate(R.layout.nav_header_navigation,null);
-        mUser = (TextView)headerView.findViewById(R.id.user);
-        mFacebookProfilePic = (ImageView)headerView.findViewById(R.id.facebook_pic);
-        navigationView.addHeaderView(headerView);
-        if(!Place.mUserName.equals("Not Signed In"))
+        try
         {
-            mUser.setText(Place.mUserName);
-            mFacebookProfilePic.setImageBitmap(Place.mUserProfilePic);
-        }
-        else {
-            // set the profile pic to "undefined"
-            mUser.setText(Place.mUserName);
-        }
+            mView = inflater.inflate(R.layout.navigation_layout, container, false);
+            // The address search bar
+            searchEditText = (EditText)mView.findViewById(R.id.address);
+            searchTextView = (TextView)mView.findViewById(R.id.search);
+            searchTextView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(searchEditText.getText().toString() !=null && !searchEditText.getText().toString().equals("")){
+                        new LocationTask().execute(searchEditText.getText().toString());
+                    }
+                }
+            });
 
-        //  Buttons for jump to next/previous moments. They are "GONE" initially and will appear when click "View Moments on Map" in the DrawerLayout
-        mPreviousMoment = (ImageView)v.findViewById(R.id.previous_moment);
-        mNextMoment = (ImageView)v.findViewById(R.id.next_moment);
-        mPreviousMoment.setVisibility(View.GONE);
-        mNextMoment.setVisibility(View.GONE);
-        mPreviousMoment.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(mCurrentMoment == -1)     // When first click the "previous", it will take you to the last moment
-                    mCurrentMoment = mMomentsLocation.size();
-                mCurrentMoment = mCurrentMoment - 1;
-                if(mCurrentMoment != -1)
-                {   //  Move the map focus to the current moment and zoom to level 10
+            // Locating the current location
+            myLocationImageView = (ImageView)mView.findViewById(R.id.my_location);
+            myLocationImageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // Use the location service to locate
+                    isLocationReceiverRegistered = true;
+                    mLocationService = new Intent(getActivity(),MyCurrentLocationService.class);
+                    getActivity().startService(mLocationService);
+
+                    //  Add a filter for the receiver
+                    IntentFilter filter = new IntentFilter("com.raystone.ray.goplaces_v1.LOCATION_SERVICE");
+                    mLocationReceiver = new MyMapFragment.LocationReceiver();
+                    getActivity().registerReceiver(mLocationReceiver, filter);
+                }
+            });
+
+            // more work for the toolbar and the DrawerLayout
+            mToolbar = (Toolbar) mView.findViewById(R.id.toolbar);
+            //((AppCompatActivity)getActivity()).setSupportActionBar(mToolbar);
+            DrawerLayout drawer = (DrawerLayout)mView. findViewById(R.id.drawer_layout);
+            ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(getActivity(), drawer, mToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+            drawer.setDrawerListener(toggle);
+            toggle.syncState();
+            NavigationView navigationView = (NavigationView)mView.findViewById(R.id.nav_view);
+            navigationView.setNavigationItemSelectedListener(this);
+
+            // Add a headView in the DrawerLayout
+            LinearLayout headerView = (LinearLayout)LayoutInflater.from(getActivity()).inflate(R.layout.nav_header_navigation,null);
+            mUser = (TextView)headerView.findViewById(R.id.user);
+            mFacebookProfilePic = (ImageView)headerView.findViewById(R.id.facebook_pic);
+            navigationView.addHeaderView(headerView);
+            if(!Place.mUserName.equals("Not Signed In"))
+            {
+                mUser.setText(Place.mUserName);
+                mFacebookProfilePic.setImageBitmap(Place.mUserProfilePic);
+            }
+            else {
+                // set the profile pic to "undefined"
+                mUser.setText(Place.mUserName);
+            }
+
+            //  Buttons for jump to next/previous moments. They are "GONE" initially and will appear when click "View Moments on Map" in the DrawerLayout
+            mPreviousMoment = (ImageView)mView.findViewById(R.id.previous_moment);
+            mNextMoment = (ImageView)mView.findViewById(R.id.next_moment);
+            mPreviousMoment.setVisibility(View.GONE);
+            mNextMoment.setVisibility(View.GONE);
+            mPreviousMoment.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(mCurrentMoment == -1)     // When first click the "previous", it will take you to the last moment
+                        mCurrentMoment = mMomentsLocation.size();
+                    mCurrentMoment = mCurrentMoment - 1;
+                    if(mCurrentMoment != -1)
+                    {   //  Move the map focus to the current moment and zoom to level 10
+                        LatLng currentLatLng = mMomentsLocation.get(mCurrentMoment);
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 7));
+                        mMap.animateCamera(CameraUpdateFactory.zoomTo(10), 3000, null);
+                    }
+                }
+            });
+            mNextMoment.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(mCurrentMoment >= mMomentsLocation.size()-1)           // When first click the "next", it will take you to the first moment.
+                        mCurrentMoment = -1;
+                    mCurrentMoment = mCurrentMoment + 1;
                     LatLng currentLatLng = mMomentsLocation.get(mCurrentMoment);
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 7));
                     mMap.animateCamera(CameraUpdateFactory.zoomTo(10), 3000, null);
                 }
-            }
-        });
-        mNextMoment.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(mCurrentMoment >= mMomentsLocation.size()-1)           // When first click the "next", it will take you to the first moment.
-                    mCurrentMoment = -1;
-                mCurrentMoment = mCurrentMoment + 1;
-                LatLng currentLatLng = mMomentsLocation.get(mCurrentMoment);
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 7));
-                mMap.animateCamera(CameraUpdateFactory.zoomTo(10), 3000, null);
-            }
-        });
-        mView = v;
-        return v;
+            });
+        }catch(InflateException e)
+        {}
+
+        return mView;
     }
 
-    public void showMomentsOnMap()
+    private void showMomentsOnMap()
     {   //  When click "View Moments on Map" in the DrawerLayout, the "previous moment" and "next moment" will appear. It will also add markers on map if its corresponding LatLng is known. The marker are indexed so it will help to retrieve their corresponding moments.
         mPreviousMoment.setVisibility(View.VISIBLE);
         mNextMoment.setVisibility(View.VISIBLE);
@@ -208,40 +234,79 @@ public class MyMapFragment extends Fragment implements
             public boolean onMarkerClick(Marker marker) {
                 if(marker.getTitle().equals("Current Location"))
                 {   // When click on the "current location" marker, it will prompt to add a new place(moment)
-                    MoveAmongFragments.MAPTOPLACE  = true;
-                    Intent intent = new Intent(getActivity(), PlaceActivity.class);
-                    startActivity(intent);
+                    MoveAmongFragments.addPlaceMode  = true;
+                    mapToDetail();
                 }else{  // When click on other markers, it will jump to their corresponding place(moment) detail page where one can edit and save the place(moment).
-                MoveAmongFragments.markerToDetail = true;
-                Intent intent = new Intent(getActivity(), EditPlaceActivity.class);
-                MoveAmongFragments.listDetailToPlaceDetail = true;
-                MoveAmongFragments.listToDetailPlace = Places.get(getActivity()).getPlaces().get(Integer.parseInt(marker.getSnippet()));;
-                MoveAmongFragments.editPlace = Places.get(getActivity()).getPlaces().get(Integer.parseInt(marker.getSnippet()));;
-                intent.putExtra("UUIDFromListDetail", MoveAmongFragments.editPlace.getID().toString());
-                MoveAmongFragments.STATE = "LISTFROMPLACE";
-                startActivity(intent);}
+                    MoveAmongFragments.markerToDetail = true;
+                    MoveAmongFragments.editPlaceMode = true;
+                    MoveAmongFragments.editPlace = Places.get(getActivity()).getPlaces().get(Integer.parseInt(marker.getSnippet()));;
+                    MoveAmongFragments.STATE = "LISTFROMPLACE";
+                    listToEdit();
+                }
                 return false;
             }
         });
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        buildGoogleApiClient();
-        mCurrentActivity = getActivity();
-        mGoogleApiClient.connect();
-        mTotalMoments = Places.get(getActivity()).getPlaces().size();  //  The total number of places(moments) ones has defined
+    private void listToEdit()
+    {
+        android.app.FragmentManager fm = getActivity().getFragmentManager();
+        android.app.FragmentTransaction trans = fm.beginTransaction();
+        android.app.Fragment fragment = fm.findFragmentByTag("EDITPLACE");
+        if(fragment == null) {
+            fragment = EditPlaceFragment.newInstance();
+        }
+        trans.replace(R.id.login_fragment_container, fragment,"EDITPLACE");
+        trans.addToBackStack(null);
+        trans.commit();
+        MoveAmongFragments.currentFragment = "EDITPLACE";
+    }
+
+    private void mapToDetail()
+    {
+        android.app.FragmentManager fm = getActivity().getFragmentManager();
+        android.app.FragmentTransaction trans = fm.beginTransaction();
+        android.app.Fragment fragment = fm.findFragmentByTag("PLACEDETAIL");
+        if(fragment == null) {
+            fragment = PlaceDetailFragment.newInstance();
+        }
+        trans.replace(R.id.login_fragment_container, fragment,"PLACEDETAIL");
+        trans.addToBackStack(null);
+        trans.commit();
+        MoveAmongFragments.currentFragment = "PLACEDETAIL";
+    }
+
+    private void mapToList()
+    {
+        android.app.FragmentManager fm = getActivity().getFragmentManager();
+        android.app.FragmentTransaction trans = fm.beginTransaction();
+        android.app.Fragment fragment = fm.findFragmentByTag("PLACELISTDETAIL");
+        if(fragment == null) {
+            fragment = PlaceListFragment.newInstance();
+        }
+        trans.replace(R.id.login_fragment_container, fragment,"PLACELISTDETAIL");
+        trans.addToBackStack(null);
+        trans.commit();
+        MoveAmongFragments.currentFragment = "PLACELISTDETAIL";
     }
 
     @Override
-    public void onDetach()
+    public void onDestroyView()
     {
-        super.onDetach();
+        super.onDestroyView();
+        mMap = null;
         mGoogleApiClient.disconnect();
         if(isLocationReceiverRegistered){  // unregister the location receiver
-        getActivity().unregisterReceiver(mLocationReceiver);}
+            getActivity().unregisterReceiver(mLocationReceiver);
+            mLocationService = null;
+            mLocationReceiver = null;
+            isLocationReceiverRegistered = false;
+        }
+        mCurrentActivity = null;
+
     }
+
+
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -255,14 +320,10 @@ public class MyMapFragment extends Fragment implements
         int id = item.getItemId();
 
         if (id == R.id.nav_camera) {  // Add a new place
-            Intent i = new Intent(getActivity(),PlaceActivity.class);
-            startActivity(i);
-            onDetach();
-
+            MoveAmongFragments.addPlaceMode  = true;
+            mapToDetail();
         } else if (id == R.id.nav_gallery) {  // View places on list
-            Intent i = new Intent(getActivity(),PlaceListActivity.class);
-            startActivity(i);
-            onDetach();
+            mapToList();
         } else if (id == R.id.nav_slideshow) {   // View places on map
             showMomentsOnMap();
             MoveAmongFragments.markerToDetail = true;
@@ -286,7 +347,7 @@ public class MyMapFragment extends Fragment implements
 
     @Override
     public void onConnected(Bundle connectionHint) {   // set up a few things for google map
-        mMap = ((SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map)).getMap();
+        mMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
         mMap.setMyLocationEnabled(false);
         mMap.getUiSettings().setZoomControlsEnabled(true);
 

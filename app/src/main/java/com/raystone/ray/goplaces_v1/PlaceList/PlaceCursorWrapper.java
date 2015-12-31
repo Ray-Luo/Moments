@@ -3,7 +3,7 @@ package com.raystone.ray.goplaces_v1.PlaceList;
 import android.database.Cursor;
 import android.database.CursorWrapper;
 
-import com.raystone.ray.goplaces_v1.Place;
+import com.raystone.ray.goplaces_v1.Helper.Place;
 
 import java.util.UUID;
 

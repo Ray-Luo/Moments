@@ -2,7 +2,6 @@ package com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel2;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -12,14 +11,10 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-
-import com.raystone.ray.goplaces_v1.BitmapCache;
-import com.raystone.ray.goplaces_v1.ImageItem;
-import com.raystone.ray.goplaces_v1.LoadImage;
-import com.raystone.ray.goplaces_v1.MyBitMap;
+import com.raystone.ray.goplaces_v1.Helper.BitmapCache;
+import com.raystone.ray.goplaces_v1.Helper.ImageItem;
+import com.raystone.ray.goplaces_v1.Helper.MyBitMap;
 import com.raystone.ray.goplaces_v1.R;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,6 +84,7 @@ public class ImageBucketLevel2Adapter extends BaseAdapter {
 		return position;
 	}
 
+	//  define a Holder which consists of an ImageView to show the picture itself, another ImageView to show whether the image has been selected or not. The TextView has a unique style showing a red hollow box indicting the image has been selected.
 	class Holder {
 		private ImageView iv;
 		private ImageView selected;
@@ -117,19 +113,22 @@ public class ImageBucketLevel2Adapter extends BaseAdapter {
 		cache.displayBmp(holder.iv, item.thumbnailPath, item.imagePath,
 				callback);
 		if (item.isSelected) {
+			//  If the image is selected, there will be a check on the up right corner, and the boundary of the image will be red
 			holder.selected.setImageResource(R.drawable.icon_data_select);  
 			holder.text.setBackgroundResource(R.drawable.bgd_relatly_line);
 		} else {
             holder.selected.setImageDrawable(null);
 			holder.text.setBackgroundColor(0x00000000);
 		}
+
+		//  If selected, add the path of the image into the "ImageBucketLevel2Adapter.map". If unselected, remove from the "ImageBucketLevel2Adapter.map". At the same time, use an integer "selectTotal" to keep track of number of images being selected, and call the "onListen" function to show the total number in the fragment.
 		holder.iv.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
 				String path = dataList.get(position).imagePath;
 
-				if ((MyBitMap.dir.size() + selectTotal) < 8) {
+				if ((MyBitMap.dir.size() + selectTotal) < 6) {
 					item.isSelected = !item.isSelected;
 					if (item.isSelected) {
 						holder.selected
@@ -148,7 +147,7 @@ public class ImageBucketLevel2Adapter extends BaseAdapter {
 							textcallback.onListen(selectTotal);
 						map.remove(path);
 					}
-				} else if ((MyBitMap.dir.size() + selectTotal) >= 8) {
+				} else if ((MyBitMap.dir.size() + selectTotal) >= 6) {
 					if (item.isSelected == true) {
 						item.isSelected = !item.isSelected;
                         holder.selected.setImageDrawable(null);

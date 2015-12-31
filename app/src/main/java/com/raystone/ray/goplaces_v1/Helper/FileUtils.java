@@ -1,4 +1,4 @@
-package com.raystone.ray.goplaces_v1;
+package com.raystone.ray.goplaces_v1.Helper;
 
 import android.graphics.Bitmap;
 import android.os.Environment;
@@ -15,7 +15,7 @@ public class FileUtils {
 			+ "/GoPlaces/";
 
 	public static void saveBitmap(Bitmap bm, String subFolderName,String picName) {
-		Log.e("", "保存图片");
+		Log.e("", "save pictures");
 		try {
 			if (!isFileExist("")) {
 				File tempf = createSDDir("");
@@ -56,24 +56,24 @@ public class FileUtils {
 		return file.exists();
 	}
 	
-	public static void delFile(String fileName){
-		File file = new File(SDPATH + fileName);
+	public static void delFile(String subFolderName, String fileName){
+		File file = new File(SDPATH + "/" + subFolderName + "/" + fileName);
 		if(file.isFile()){
 			file.delete();
         }
 		file.exists();
 	}
 
-	public static void deleteDir() {
-		File dir = new File(SDPATH);
+	public static void deleteDir(String subFolderName) {
+		File dir = new File(SDPATH + "/" + subFolderName + "/");
 		if (dir == null || !dir.exists() || !dir.isDirectory())
 			return;
 		
 		for (File file : dir.listFiles()) {
 			if (file.isFile())
 				file.delete(); // 删除所有文件
-			//else if (file.isDirectory())
-				//deleteDir(); // 递规的方式删除文件夹
+			else if (file.isDirectory())
+				deleteDir(SDPATH + "/" + subFolderName + "/"); // 递规的方式删除文件夹
 		}
 		dir.delete();// 删除目录本身
 	}

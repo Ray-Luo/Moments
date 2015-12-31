@@ -1,9 +1,8 @@
-package com.raystone.ray.goplaces_v1;
+package com.raystone.ray.goplaces_v1.Helper;
 
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
-import android.provider.MediaStore.Audio.Albums;
 import android.provider.MediaStore.Images.Media;
 import android.provider.MediaStore.Images.Thumbnails;
 import android.util.Log;
@@ -15,20 +14,21 @@ import java.util.List;
 import java.util.Map.Entry;
 
 /**
- * Created by Ray on 11/24/2015.
+ * Created by Ray on 11/24/2015.  This class is intended to retrieve pictures from every holder. put images from one folder into the same ImageBucket
  */
 public class AlbumHelper {
 	final String TAG = getClass().getSimpleName();
 	Context context;
 	ContentResolver cr;
 
-	// 缩略图列表
+	// define the thumbnail list
 	HashMap<String, String> thumbnailList = new HashMap<String, String>();
-	// 专辑列表
-	List<HashMap<String, String>> albumList = new ArrayList<HashMap<String, String>>();
+
+	// ImageBucket consists of an integer which says the number of pictures the folder has, a string which is the name of the folder, and an ImageList which has all the images' thumbnail path if that exits and
+    //  the source path, an index, and a boolean indicting whether the picture has been selected or not.
 	HashMap<String, ImageBucket> bucketList = new HashMap<String, ImageBucket>();
 
-	private static AlbumHelper instance;
+	public static AlbumHelper instance;
 
 	private AlbumHelper() {
 	}
@@ -41,9 +41,7 @@ public class AlbumHelper {
 	}
 
 	/**
-	 * 初始化
-	 * 
-	 * @param context
+	 * Initialization. Get the ContentResolver.
 	 */
 	public void init(Context context) {
 		if (this.context == null) {
@@ -53,7 +51,7 @@ public class AlbumHelper {
 	}
 
 	/**
-	 * 得到缩略图
+	 * The two following functions is used to retrieve the thumbnail
 	 */
 	private void getThumbnail() {
 		String[] projection = { Thumbnails._ID, Thumbnails.IMAGE_ID,
@@ -63,11 +61,7 @@ public class AlbumHelper {
 		getThumbnailColumnData(cursor);
 	}
 
-	/**
-	 * 从数据库中得到缩略图
-	 * 
-	 * @param cur
-	 */
+
 	private void getThumbnailColumnData(Cursor cur) {
 		if (cur.moveToFirst()) {
 			int _id;
@@ -87,89 +81,25 @@ public class AlbumHelper {
 		}
 	}
 
-	/**
-	 * 得到原图
-	 */
-	void getAlbum() {
-		String[] projection = { Albums._ID, Albums.ALBUM, Albums.ALBUM_ART,
-				Albums.ALBUM_KEY, Albums.ARTIST, Albums.NUMBER_OF_SONGS };
-		Cursor cursor = cr.query(Albums.EXTERNAL_CONTENT_URI, projection, null,
-				null, null);
-		getAlbumColumnData(cursor);
 
-	}
-
-	/**
-	 * 从本地数据库中得到原图
-	 * 
-	 * @param cur
-	 */
-	private void getAlbumColumnData(Cursor cur) {
-		if (cur.moveToFirst()) {
-			int _id;
-			String album;
-			String albumArt;
-			String albumKey;
-			String artist;
-			int numOfSongs;
-
-			int _idColumn = cur.getColumnIndex(Albums._ID);
-			int albumColumn = cur.getColumnIndex(Albums.ALBUM);
-			int albumArtColumn = cur.getColumnIndex(Albums.ALBUM_ART);
-			int albumKeyColumn = cur.getColumnIndex(Albums.ALBUM_KEY);
-			int artistColumn = cur.getColumnIndex(Albums.ARTIST);
-			int numOfSongsColumn = cur.getColumnIndex(Albums.NUMBER_OF_SONGS);
-
-			do {
-				// Get the field values
-				_id = cur.getInt(_idColumn);
-				album = cur.getString(albumColumn);
-				albumArt = cur.getString(albumArtColumn);
-				albumKey = cur.getString(albumKeyColumn);
-				artist = cur.getString(artistColumn);
-				numOfSongs = cur.getInt(numOfSongsColumn);
-
-				// Do something with the values.
-				Log.i(TAG, _id + " album:" + album + " albumArt:" + albumArt
-						+ "albumKey: " + albumKey + " artist: " + artist
-						+ " numOfSongs: " + numOfSongs + "---");
-				HashMap<String, String> hash = new HashMap<String, String>();
-				hash.put("_id", _id + "");
-				hash.put("album", album);
-				hash.put("albumArt", albumArt);
-				hash.put("albumKey", albumKey);
-				hash.put("artist", artist);
-				hash.put("numOfSongs", numOfSongs + "");
-				albumList.add(hash);
-
-			} while (cur.moveToNext());
-
-		}
-	}
-
-	/**
-	 * 是否创建了图片集
-	 */
 	boolean hasBuildImagesBucketList = false;
 
 	/**
-	 * 得到图片集
+	 * get the ImageList
 	 */
 	void buildImagesBucketList() {
 		long startTime = System.currentTimeMillis();
 
-		// 构造缩略图索引
+		// get thumbnail list
 		getThumbnail();
 
-		// 构造相册索引
+		// query every folder which has images
 		String columns[] = new String[] { Media._ID, Media.BUCKET_ID,
 				Media.PICASA_ID, Media.DATA, Media.DISPLAY_NAME, Media.TITLE,
 				Media.SIZE, Media.BUCKET_DISPLAY_NAME };
-		// 得到一个游标
-		Cursor cur = cr.query(Media.EXTERNAL_CONTENT_URI, columns, null, null,
-				null);
+		Cursor cur = cr.query(Media.EXTERNAL_CONTENT_URI, columns, null, null, null);
 		if (cur.moveToFirst()) {
-			// 获取指定列的索引
+			// get every pictures in a specific folder and put them in an ImageBucket. Repeat this process for every folder
 			int photoIDIndex = cur.getColumnIndexOrThrow(Media._ID);
 			int photoPathIndex = cur.getColumnIndexOrThrow(Media.DATA);
 			int photoNameIndex = cur.getColumnIndexOrThrow(Media.DISPLAY_NAME);
@@ -179,7 +109,8 @@ public class AlbumHelper {
 					.getColumnIndexOrThrow(Media.BUCKET_DISPLAY_NAME);
 			int bucketIdIndex = cur.getColumnIndexOrThrow(Media.BUCKET_ID);
 			int picasaIdIndex = cur.getColumnIndexOrThrow(Media.PICASA_ID);
-			// 获取图片总数
+
+			// get total number of pictures
 			int totalNum = cur.getCount();
 
 			do {
@@ -192,11 +123,13 @@ public class AlbumHelper {
 				String bucketId = cur.getString(bucketIdIndex);
 				String picasaId = cur.getString(picasaIdIndex);
 
+				// print out some info about every single picture
 				Log.i(TAG, _id + ", bucketId: " + bucketId + ", picasaId: "
 						+ picasaId + " name:" + name + " path:" + path
 						+ " title: " + title + " size: " + size + " bucket: "
 						+ bucketName + "---");
 
+				//  add pictures from a particular folder into an ImageBucket
 				ImageBucket bucket = bucketList.get(bucketId);
 				if (bucket == null) {
 					bucket = new ImageBucket();
@@ -214,6 +147,11 @@ public class AlbumHelper {
 			} while (cur.moveToNext());
 		}
 
+
+
+		/*
+		print out the number of images each folder has and the time took to save all the images into the "HashMap<String, ImageBucket> bucketList"
+		 */
 		Iterator<Entry<String, ImageBucket>> itr = bucketList.entrySet()
 				.iterator();
 		while (itr.hasNext()) {
@@ -234,10 +172,7 @@ public class AlbumHelper {
 	}
 
 	/**
-	 * 得到图片集
-	 * 
-	 * @param refresh
-	 * @return
+	 *  This function will be called for retrieving the picture holders and the pictures in them. It returns a copy of "bucketList".
 	 */
 	public List<ImageBucket> getImagesBucketList(boolean refresh) {
 		if (refresh || (!refresh && !hasBuildImagesBucketList)) {
@@ -254,24 +189,6 @@ public class AlbumHelper {
 		return tmpList;
 	}
 
-	/**
-	 * 得到原始图像路径
-	 * 
-	 * @param image_id
-	 * @return
-	 */
-	String getOriginalImagePath(String image_id) {
-		String path = null;
-		Log.i(TAG, "---(^o^)----" + image_id);
-		String[] projection = { Media._ID, Media.DATA };
-		Cursor cursor = cr.query(Media.EXTERNAL_CONTENT_URI, projection,
-				Media._ID + "=" + image_id, null, null);
-		if (cursor != null) {
-			cursor.moveToFirst();
-			path = cursor.getString(cursor.getColumnIndex(Media.DATA));
 
-		}
-		return path;
-	}
 
 }

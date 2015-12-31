@@ -1,4 +1,4 @@
-package com.raystone.ray.goplaces_v1;
+package com.raystone.ray.goplaces_v1.Helper;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -30,8 +30,8 @@ public class MyBitMap {
         int i = 0;
         Bitmap bitmap;
         while (true) {
-            if ((options.outWidth  >= 512)
-                    || (options.outHeight  >= 512)) {
+            if ((options.outWidth  >= 540)
+                    || (options.outHeight  >= 720)) {
                 in = new BufferedInputStream(new FileInputStream(new File(path)));
                 options.inSampleSize = (int) Math.pow(2.0D, i);
                 options.inJustDecodeBounds = true;
