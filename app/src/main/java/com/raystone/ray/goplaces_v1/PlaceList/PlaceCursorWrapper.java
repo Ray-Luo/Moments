@@ -18,7 +18,7 @@ public class PlaceCursorWrapper extends CursorWrapper {
     public Place getPlace()
     {
         String uuid = getString(getColumnIndex(PlaceDbSchema.PlaceTable.Cols.UUID));
-        String user_name = getString(getColumnIndex(PlaceDbSchema.PlaceTable.Cols.USER_NAME));
+        //String user_name = getString(getColumnIndex(PlaceDbSchema.PlaceTable.Cols.USER_NAME));
         String description = getString(getColumnIndex(PlaceDbSchema.PlaceTable.Cols.DESCRIPTION));
         String address = getString(getColumnIndex(PlaceDbSchema.PlaceTable.Cols.ADDRESS));
         String pics_dir = getString(getColumnIndex(PlaceDbSchema.PlaceTable.Cols.PICSDIR));
@@ -31,7 +31,7 @@ public class PlaceCursorWrapper extends CursorWrapper {
         place.setPlaceTime(time);
         place.setDescription(description);
         place.setPicDirs(pics_dir);
-        place.setUserName(user_name);
+        //place.setUserName(user_name);
         place.setPlaceLatitude(latitude);
         place.setPlaceLongitude(longitude);
 

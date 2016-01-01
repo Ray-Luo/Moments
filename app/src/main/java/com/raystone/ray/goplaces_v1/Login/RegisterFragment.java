@@ -2,6 +2,7 @@ package com.raystone.ray.goplaces_v1.Login;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -11,7 +12,9 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.raystone.ray.goplaces_v1.Helper.MoveAmongFragments;
 import com.raystone.ray.goplaces_v1.Helper.Place;
+import com.raystone.ray.goplaces_v1.Map.MyMapFragment;
 import com.raystone.ray.goplaces_v1.R;
 
 /**
@@ -22,6 +25,7 @@ public class RegisterFragment extends android.app.Fragment {
     private AutoCompleteTextView mRegisterEmail;
     private EditText mRegisterPassword;
     private Button mRegisterButton;
+    private View mView;
 
     public static RegisterFragment newInstance()
     {
@@ -30,16 +34,20 @@ public class RegisterFragment extends android.app.Fragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {super.onCreate(savedInstanceState);}
+    public void onDestroyView()
+    {
+        super.onDestroyView();
+        mView = null;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-        View v = inflater.inflate(R.layout.register,container,false);
-        mRegisterEmail = (AutoCompleteTextView)v.findViewById(R.id.register_email);
-        mRegisterPassword = (EditText)v.findViewById(R.id.register_password);
-        mRegisterButton = (Button)v.findViewById(R.id.register);
+        super.onCreateView(inflater, container, savedInstanceState);
+        mView = inflater.inflate(R.layout.register,container,false);
+        mRegisterEmail = (AutoCompleteTextView)mView.findViewById(R.id.register_email);
+        mRegisterPassword = (EditText)mView.findViewById(R.id.register_password);
+        mRegisterButton = (Button)mView.findViewById(R.id.register);
         mRegisterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -50,17 +58,28 @@ public class RegisterFragment extends android.app.Fragment {
                     editor.putString("password",mRegisterPassword.getText().toString());
                     editor.commit();
                     Place.mUserName = mRegisterEmail.getText().toString();
-                    /*
-                    Intent intent = new Intent(getActivity(),MyMapActivity.class);
-                    startActivity(intent);
-                    */
+                    Place.mUserProfilePic = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
+                    jumpToMap();
                 }
             }
         });
-        return v;
+        return mView;
     }
 
+    public void jumpToMap()
+    {
+        android.app.FragmentManager fm = getActivity().getFragmentManager();
+        android.app.FragmentTransaction trans = fm.beginTransaction();
+        android.app.Fragment fragment = fm.findFragmentByTag("MAPFRAGMENT");
+        if(fragment == null) {
+            fragment = MyMapFragment.newInstance();
+        }
+        trans.replace(R.id.login_fragment_container, fragment,"MAPFRAGMENT");
+        trans.addToBackStack(null);
+        trans.commit();
+        MoveAmongFragments.currentFragment = "MAPFRAGMENT";
 
+    }
 
     private boolean checkValues()
     {
@@ -83,7 +102,7 @@ public class RegisterFragment extends android.app.Fragment {
             isFieldValid = false;
             return isFieldValid;
         }
-        else if(!isEmailVaild(email))
+        else if(!isEmailValid(email))
         {
             mRegisterEmail.setError("The email format is invalid");
             isFieldValid = false;
@@ -98,7 +117,7 @@ public class RegisterFragment extends android.app.Fragment {
         return password.length()>8;
     }
 
-    private boolean isEmailVaild(String email)
+    private boolean isEmailValid(String email)
     {
         return email.contains("@");
     }

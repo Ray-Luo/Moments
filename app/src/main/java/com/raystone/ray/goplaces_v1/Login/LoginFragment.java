@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -95,7 +96,6 @@ public class LoginFragment extends android.app.Fragment {
         mSignInWithFacebook = null;
         mSignUp = null;
         mSkip = null;
-        mCallback = null;
         mCallbackManager = null;
         mPasswordView = null;
         mEmailView = null;
@@ -107,6 +107,7 @@ public class LoginFragment extends android.app.Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater,ViewGroup container, Bundle savedInstanceState)
     {
+        super.onCreateView(inflater, container, savedInstanceState);
         load();
         mView = inflater.inflate(R.layout.login,container,false);
         mEmailView = (AutoCompleteTextView)mView.findViewById(R.id.email);
@@ -122,11 +123,9 @@ public class LoginFragment extends android.app.Fragment {
                     String password = preferences.getString("password","");
                     if (mEmailView.getText().toString().equals(email) && mPasswordView.getText().toString().equals(password))
                     {
-                        /*
-                        Intent intent = new Intent(getActivity(),MyMapActivity.class);
-                        startActivity(intent);
+                        jumpToMap();
                         Place.mUserName = email;
-                        */
+                        Place.mUserProfilePic = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
                     }else
                     {
                         Toast.makeText(getActivity(),"Incorrect user name or password",Toast.LENGTH_SHORT).show();
@@ -147,11 +146,7 @@ public class LoginFragment extends android.app.Fragment {
         mSignUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                /*
-                Intent intent = new Intent(getActivity(), RegisterActivity.class);
-                startActivity(intent);
-                */
+                jumpToRegister();
             }
         });
 
@@ -160,9 +155,9 @@ public class LoginFragment extends android.app.Fragment {
         mSkip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               /* Intent intent = new Intent(getActivity(), MyMapActivity.class);
-                startActivity(intent);
-                */
+                jumpToMap();
+                Place.mUserName = "Not Signed In";
+                Place.mUserProfilePic = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
             }
         });
         return mView;
@@ -194,14 +189,9 @@ public class LoginFragment extends android.app.Fragment {
                     }
                 };
                 mRecycleLoadProfilePicThread.start();
-
                 // After the above happened, it will jump to the main app interface
                 jumpToMap();
-            }
-        } else {
-            // If logged out, set the user name and profile pic to "undefined"
-            Place.mUserName = "Not Signed In";
-            Place.mUserProfileUri = null;
+                }
             }
         }
     }
@@ -218,6 +208,21 @@ public class LoginFragment extends android.app.Fragment {
         trans.addToBackStack(null);
         trans.commit();
         MoveAmongFragments.currentFragment = "MAPFRAGMENT";
+
+    }
+
+    public void jumpToRegister()
+    {
+        android.app.FragmentManager fm = getActivity().getFragmentManager();
+        android.app.FragmentTransaction trans = fm.beginTransaction();
+        android.app.Fragment fragment = fm.findFragmentByTag("REGISTER");
+        if(fragment == null) {
+            fragment = RegisterFragment.newInstance();
+        }
+        trans.replace(R.id.login_fragment_container, fragment,"REGISTER");
+        trans.addToBackStack(null);
+        trans.commit();
+        MoveAmongFragments.currentFragment = "REGISTER";
 
     }
 

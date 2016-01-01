@@ -104,7 +104,7 @@ public class MyMapFragment extends android.app.Fragment implements
         buildGoogleApiClient();
         mCurrentActivity = getActivity();
         mGoogleApiClient.connect();
-        mTotalMoments = Places.get(getActivity()).getPlaces().size();  //  The total number of places(moments) ones has defined
+        mTotalMoments = Places.get(getActivity()).getPlaces().size();  //  The total number of places(moments) ones has added
     }
 
 
@@ -115,6 +115,11 @@ public class MyMapFragment extends android.app.Fragment implements
         super.onCreateView(inflater, container, savedInstanceState);
         if (mView != null) {
             ViewGroup parent = (ViewGroup) mView.getParent();
+           // LinearLayout headerView = (LinearLayout)LayoutInflater.from(getActivity()).inflate(R
+                  //  .layout.nav_header_navigation, null);
+            //mUser = (TextView)headerView.findViewById(R.id.user);
+            mUser.setText(Place.mUserName);
+            mFacebookProfilePic.setImageBitmap(Place.mUserProfilePic);
             if (parent != null)
                 parent.removeView(mView);
             load();
@@ -167,15 +172,15 @@ public class MyMapFragment extends android.app.Fragment implements
             mUser = (TextView)headerView.findViewById(R.id.user);
             mFacebookProfilePic = (ImageView)headerView.findViewById(R.id.facebook_pic);
             navigationView.addHeaderView(headerView);
-            if(!Place.mUserName.equals("Not Signed In"))
-            {
+            //if(!Place.mUserName.equals("Not Signed In"))
+            //{
                 mUser.setText(Place.mUserName);
                 mFacebookProfilePic.setImageBitmap(Place.mUserProfilePic);
-            }
-            else {
+           // }
+            //else {
                 // set the profile pic to "undefined"
-                mUser.setText(Place.mUserName);
-            }
+               // mUser.setText(Place.mUserName);
+           // }
 
             //  Buttons for jump to next/previous moments. They are "GONE" initially and will appear when click "View Moments on Map" in the DrawerLayout
             mPreviousMoment = (ImageView)mView.findViewById(R.id.previous_moment);
@@ -319,16 +324,14 @@ public class MyMapFragment extends android.app.Fragment implements
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {  // Add a new place
+        if (id == R.id.add_moments) {  // Add a new place
             MoveAmongFragments.addPlaceMode  = true;
             mapToDetail();
-        } else if (id == R.id.nav_gallery) {  // View places on list
+        } else if (id == R.id.view_list) {  // View places on list
             mapToList();
-        } else if (id == R.id.nav_slideshow) {   // View places on map
+        } else if (id == R.id.map_show) {   // View places on map
             showMomentsOnMap();
             MoveAmongFragments.markerToDetail = true;
-        } else if (id == R.id.nav_manage) {
-
         }
 
         DrawerLayout drawer = (DrawerLayout) mView .findViewById(R.id.drawer_layout);

@@ -129,9 +129,6 @@ public class PlaceDetailFragment extends android.app.Fragment{
                     new MyPopupWindow(getActivity(), mPicGridView);
                 } else {
                     //  when press the picture itself, it will launch the ViewPicActivity and its fragment to view the picture one pressed
-                    //Intent intent = new Intent(getActivity(), ViewPicActivity.class);
-                    //intent.putExtra("ID", arg2);
-                    //startActivity(intent);
                     viewPics(arg2);
                     MoveAmongFragments.fromDetailToViewPics  =true;
                 }

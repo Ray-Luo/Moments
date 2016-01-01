@@ -133,12 +133,7 @@ public class PlaceListFragment extends android.app.Fragment {
             mPlaceTime.setText(mPlace.getPlaceTime());
             mDescription.setText(mPlace.getDescription());
             mUserName.setText(mPlace.getUserName());
-
-            if(Place.mUserProfileUri != null)
-            {
-                mProfilePic.setImageBitmap(Place.mUserProfilePic);
-            }
-
+            mProfilePic.setImageBitmap(Place.mUserProfilePic);
             mPlaceItemPics.setSelector(new ColorDrawable(Color.TRANSPARENT));
             myPicGridAdapter = new PlaceDetailAdapter(getActivity());
 

@@ -4,9 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-
 import com.raystone.ray.goplaces_v1.Helper.Place;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -17,7 +15,6 @@ import java.util.UUID;
 public class Places {
 
     private static Places sPlaces;
-
     private Context mContext;
     private SQLiteDatabase mDatabase;
 
@@ -72,7 +69,7 @@ public class Places {
     {
         String uuid = place.getID().toString();
         ContentValues values = getContentValues(place);
-        int a = mDatabase.update(PlaceDbSchema.PlaceTable.TABLE_NAME,values, PlaceDbSchema.PlaceTable.Cols.UUID + " =  ?", new String[] {uuid});
+        mDatabase.update(PlaceDbSchema.PlaceTable.TABLE_NAME,values, PlaceDbSchema.PlaceTable.Cols.UUID + " =  ?", new String[] {uuid});
     }
 
     private static ContentValues getContentValues(Place place)

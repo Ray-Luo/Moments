@@ -5,6 +5,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import com.raystone.ray.goplaces_v1.Helper.MoveAmongFragments;
 import com.raystone.ray.goplaces_v1.Helper.MyBitMap;
+import com.raystone.ray.goplaces_v1.Helper.Place;
 import com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel3.PlaceDetailFragment;
 import com.raystone.ray.goplaces_v1.R;
 
@@ -53,6 +54,7 @@ public class LoginActivity extends AppCompatActivity {
                 super.onBackPressed();
                 MyBitMap.bmp = null;
                 MyBitMap.dir = null;
+                //Place = null;
                 android.app.Fragment fragment = fm.findFragmentByTag("LOGINFRAGMENT");
                 trans.remove(fragment);
                 trans.commit();
