@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="#ffffff"
+              android:orientation="vertical"
+              >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="#303F9F">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="@string/moments"
+            android:textColor="#ffffff"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/activity_selectimg_send"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="8dp"
+            android:gravity="center"
+            android:textColor="#ffffff"
+            android:textSize="20sp" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <EditText
+            android:id="@+id/descrip"
+            android:layout_width="fill_parent"
+            android:layout_height="100dp"
+            android:layout_margin="8dp"
+            android:gravity="left|top"
+            android:hint="@string/moments_detail"
+            android:background="@null" >
+        </EditText>
+
+        <GridView
+            android:id="@+id/noScrollgridview"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+
+            android:numColumns="4"
+            android:scrollbars="none"
+            android:verticalSpacing="5dp"
+            android:layout_below="@+id/descrip">
+        </GridView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/noScrollgridview">
+            <ImageView
+                android:id="@+id/place_location"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:src = "@drawable/location"/>
+
+
+        </LinearLayout>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            app:backgroundTint="@color/colorPrimary"
+            android:src = "@drawable/facebook"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:padding="16dp"
+            />
+
+    </RelativeLayout>
+
+</LinearLayout>

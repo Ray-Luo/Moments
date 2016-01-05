@@ -24,7 +24,7 @@
             android:layout_height="0dp"
             android:layout_weight="0.2"
             android:gravity="center"
-            android:text="GO PLACES"
+            android:text="MOMENTS"
             android:textSize="35sp"
             android:textColor="#7C8799"/>
 
@@ -46,7 +46,8 @@
         <View
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0.11"></View>
+            android:layout_weight="0.11"
+            android:focusableInTouchMode="true"></View>
 
             <AutoCompleteTextView
                 android:id="@+id/email"
@@ -91,7 +92,8 @@
         <View
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0.11"></View>
+            android:layout_weight="0.11"
+            android:focusableInTouchMode="true"></View>
 
         <EditText
             android:id="@+id/password"
@@ -159,7 +161,20 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.11"></View>
 
-        <Button
+        <com.facebook.login.widget.LoginButton
+            android:id="@+id/sign_in_facebook"
+            android:layout_width="0dp"
+            android:layout_weight="0.78"
+            android:layout_height="800dp"
+            android:textSize="18sp"
+            android:layout_gravity="center_horizontal|center_vertical"
+            android:layout_marginBottom="30dp"
+            android:layout_marginTop="30dp"
+            />
+
+
+        <!--
+                <Button
             android:id="@+id/sign_in_facebook"
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -170,6 +185,8 @@
             android:textSize="18sp"
             android:gravity="center"
             android:background="@drawable/rounded_button_facebook"/>
+
+        -->
     </LinearLayout>
     
     <LinearLayout

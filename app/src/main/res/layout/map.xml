@@ -8,13 +8,10 @@
 
 
     <fragment android:id="@+id/map"
-              android:name="com.google.android.gms.maps.SupportMapFragment"
-              class="com.google.android.gms.maps.SupportMapFragment"
+              class="com.google.android.gms.maps.MapFragment"
               xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              tools:context="com.raystone.ray.goplaces_v1.MapsActivity"/>
+              android:layout_height="match_parent"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -58,7 +55,28 @@
     </LinearLayout>
 
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:padding="16dp"
+        android:orientation="horizontal">
 
+        <ImageView
+            android:id="@+id/previous_moment"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:src="@drawable/previous"/>
+
+        <ImageView
+            android:id="@+id/next_moment"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:src="@drawable/next"/>
+
+
+    </LinearLayout>
 
 
 

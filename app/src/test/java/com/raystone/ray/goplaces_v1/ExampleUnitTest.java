@@ -1,4 +1,4 @@
-package com.raystone.ray.goplaces_v1;
+package com.raystone.ray.goplaces;
 
 import org.junit.Test;
 
