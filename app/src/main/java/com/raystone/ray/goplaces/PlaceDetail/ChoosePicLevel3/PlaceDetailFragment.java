@@ -316,7 +316,6 @@ public class PlaceDetailFragment extends android.app.Fragment{
     }
 
 
-
     //  This saves the description and location info into the temporary newPlace if they exist
     public void saveTempPlace()
     {
