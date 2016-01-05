@@ -1,4 +1,4 @@
-package com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel3;
+package com.raystone.ray.goplaces.PlaceDetail.ChoosePicLevel3;
 
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
@@ -32,20 +32,21 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.facebook.share.model.SharePhoto;
 import com.facebook.share.model.SharePhotoContent;
 import com.facebook.share.widget.ShareDialog;
-import com.raystone.ray.goplaces_v1.Helper.FileUtils;
-import com.raystone.ray.goplaces_v1.Helper.MoveAmongFragments;
-import com.raystone.ray.goplaces_v1.Helper.MyBitMap;
-import com.raystone.ray.goplaces_v1.Helper.MyCurrentLocationService;
-import com.raystone.ray.goplaces_v1.Map.MyMapFragment;
-import com.raystone.ray.goplaces_v1.Helper.Place;
-import com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel1.ImageBucketLevel1Fragment;
-import com.raystone.ray.goplaces_v1.PlaceDetail.ChoosePicLevel4.ViewPicPagerFragment;
-import com.raystone.ray.goplaces_v1.PlaceList.Places;
-import com.raystone.ray.goplaces_v1.R;
-import com.raystone.ray.goplaces_v1.Helper.RecycleThread;
+import com.raystone.ray.goplaces.Helper.FileUtils;
+import com.raystone.ray.goplaces.Helper.MoveAmongFragments;
+import com.raystone.ray.goplaces.Helper.MyBitMap;
+import com.raystone.ray.goplaces.Helper.MyCurrentLocationService;
+import com.raystone.ray.goplaces.Helper.Place;
+import com.raystone.ray.goplaces.Helper.RecycleThread;
+import com.raystone.ray.goplaces.Map.MyMapFragment;
+import com.raystone.ray.goplaces.PlaceDetail.ChoosePicLevel1.ImageBucketLevel1Fragment;
+import com.raystone.ray.goplaces.PlaceDetail.ChoosePicLevel4.ViewPicPagerFragment;
+import com.raystone.ray.goplaces.PlaceList.Places;
+import com.raystone.ray.goplaces.R;
 
 import java.io.File;
 import java.io.IOException;
