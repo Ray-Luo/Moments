@@ -10,10 +10,8 @@
     <fragment android:id="@+id/map"
               class="com.google.android.gms.maps.MapFragment"
               xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              tools:context="com.raystone.ray.goplaces_v1.MapsActivity"/>
+              android:layout_height="match_parent"/>
 
     <LinearLayout
         android:layout_width="match_parent"
