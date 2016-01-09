@@ -12,8 +12,7 @@ import com.raystone.ray.goplaces.R;
 
 /**
  * Created by Ray on 11/14/2015.
- * This class hosts the login interface(fragment). After the back button being pressed, all the activities and their fragments
- * will be ended.
+ * This class hosts the login interface(fragment). After the back button being pressed, it will jump to the certain fragment
  */
 public class LoginActivity extends AppCompatActivity {
 
