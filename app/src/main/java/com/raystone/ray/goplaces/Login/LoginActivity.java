@@ -160,7 +160,6 @@ public class LoginActivity extends AppCompatActivity {
 
         }
 
-        //System.exit(0);
     }
 
 
